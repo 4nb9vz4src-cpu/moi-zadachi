@@ -30,7 +30,7 @@ body{
   min-height:100vh; touch-action:manipulation;
   overflow-x:hidden; /* страница никогда не расширяется из-за свайпа */
 }
-.wrap{max-width:720px; margin:0 auto; padding:0 6px} /* узкие поля — страница шире */
+.wrap{max-width:760px; margin:0 auto; padding:0 3px} /* минимальные поля — почти до краёв */
 .hidden{display:none!important}
 
 /* ----- Верхняя панель ----- */
@@ -41,27 +41,27 @@ body{
 .panel-inner{display:grid; grid-template-rows:1fr; transition:grid-template-rows .28s ease}
 .panel.collapsed .panel-inner{grid-template-rows:0fr}
 .pw{overflow:hidden; min-height:0}
-.panel-body{padding:13px 12px 18px}
+.panel-body{padding:16px 14px 20px}
 .row{display:flex; align-items:center; gap:10px}
-.font-row{margin-bottom:13px}
-.lbl{font-size:13px; color:var(--muted); width:44px; flex:none}
-.badge{min-width:26px; text-align:center; font-size:13px; font-weight:700; color:var(--accent);
-  background:#eef0ff; border-radius:8px; padding:2px 6px}
-input[type=range]{flex:1; accent-color:var(--accent); height:28px}
+.font-row{margin-bottom:15px}
+.lbl{font-size:14px; color:var(--muted); width:48px; flex:none}
+.badge{min-width:28px; text-align:center; font-size:14px; font-weight:700; color:var(--accent);
+  background:#eef0ff; border-radius:8px; padding:3px 7px}
+input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 
-.glabel{font-size:11px; text-transform:uppercase; letter-spacing:.06em;
-  color:var(--muted); margin:0 2px 6px; font-weight:600}
-.grow{display:flex; gap:8px; flex-wrap:wrap}
+.glabel{font-size:12px; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--muted); margin:0 2px 7px; font-weight:600}
+.grow{display:flex; gap:9px; flex-wrap:wrap}
 
 /* --- Кнопки --- */
 .tbtn{
-  display:flex; align-items:center; gap:6px;
-  border:1px solid var(--line); background:#fbfaff; border-radius:12px;
-  height:36px; padding:0 12px; font-size:13px; font-weight:600; color:var(--ink);
+  display:flex; align-items:center; gap:7px;
+  border:1px solid var(--line); background:#fbfaff; border-radius:13px;
+  height:42px; padding:0 15px; font-size:14px; font-weight:600; color:var(--ink);
   cursor:pointer; font-family:inherit;
   transition:transform .15s, background .3s, border-color .3s, opacity .2s;
 }
-.tbtn span{font-size:14px; color:var(--ink)}
+.tbtn span{font-size:15px; color:var(--ink)}
 .tbtn:active{transform:scale(.93)}
 .tbtn.done{background:var(--green-bg); border-color:var(--green)}
 .tbtn.off{opacity:.45}
@@ -70,58 +70,58 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 /* Главная кнопка «Добавить» */
 .tbtn-primary{
   display:flex; align-items:center; gap:8px;
-  border:none; background:var(--green); color:#fff; border-radius:12px;
-  height:46px; padding:0 20px; font-size:15.5px; font-weight:700;
+  border:none; background:var(--green); color:#fff; border-radius:14px;
+  height:52px; padding:0 22px; font-size:16.5px; font-weight:700;
   cursor:pointer; font-family:inherit;
-  box-shadow:0 3px 8px rgba(47,158,87,.35);
+  box-shadow:0 3px 9px rgba(47,158,87,.35);
   transition:transform .15s, box-shadow .2s;
 }
-.tbtn-primary span{font-size:18px; color:#fff; font-weight:600}
+.tbtn-primary span{font-size:20px; color:#fff; font-weight:600}
 .tbtn-primary:active{transform:scale(.95); box-shadow:0 1px 3px rgba(47,158,87,.3)}
 .tbtn-primary.done{background:#24824a}
 
 /* Второстепенные кнопки — рядом ниже */
-.grow.secondary{margin-top:8px}
-.grow.secondary .tbtn{height:32px; padding:0 10px; font-size:12px; font-weight:600; color:var(--muted); background:#f7f6fb}
-.grow.secondary .tbtn span{font-size:13px; color:var(--muted)}
+.grow.secondary{margin-top:10px}
+.grow.secondary .tbtn{height:36px; padding:0 12px; font-size:13px; font-weight:600; color:var(--muted); background:#f7f6fb}
+.grow.secondary .tbtn span{font-size:14px; color:var(--muted)}
 .grow.secondary .tbtn.done{color:var(--ink)}
 .tbtn-amber{background:var(--amber-bg)!important; border-color:#f2e3b3!important; color:var(--amber)!important}
 .tbtn-amber span{color:var(--amber)!important}
 
 /* --- Блок «Облако» — сворачиваемый, под задачами --- */
 .cloud-box{
-  margin-top:12px;
+  margin-top:14px;
   border:1px solid #dbe3f8; background:#f8faff;
   border-radius:14px; overflow:hidden;
 }
 .cloud-head{
-  display:flex; align-items:center; gap:8px; width:100%;
-  padding:10px 12px; border:none; background:none; cursor:pointer;
+  display:flex; align-items:center; gap:9px; width:100%;
+  padding:12px 14px; border:none; background:none; cursor:pointer;
   font-family:inherit; text-align:left;
 }
 .cloud-head:active{background:rgba(99,102,241,.05)}
-.cloud-head .cicon{font-size:15px}
-.cloud-head .ctitle{font-size:13px; font-weight:700; color:var(--ink)}
+.cloud-head .cicon{font-size:17px}
+.cloud-head .ctitle{font-size:14.5px; font-weight:700; color:var(--ink)}
 .cloud-head .cmeta{
-  margin-left:auto; font-size:11px; color:var(--muted);
+  margin-left:auto; font-size:12px; color:var(--muted);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%;
 }
 .cloud-head .cchev{
-  color:var(--muted); font-size:11px; flex:none;
+  color:var(--muted); font-size:12px; flex:none;
   transition:transform .25s ease;
 }
 .cloud-box.open .cloud-head .cchev{transform:rotate(180deg)}
 .cloud-inner{display:grid; grid-template-rows:0fr; transition:grid-template-rows .25s ease}
 .cloud-box.open .cloud-inner{grid-template-rows:1fr}
 .cloud-pw{overflow:hidden; min-height:0}
-.cloud-body{padding:2px 12px 12px}
+.cloud-body{padding:2px 14px 14px}
 
 /* --- Статистика и статус --- */
 .stats{
-  margin-top:12px; font-size:12px; color:var(--muted); text-align:center;
-  padding-top:10px; border-top:1px solid var(--line);
+  margin-top:14px; font-size:13px; color:var(--muted); text-align:center;
+  padding-top:12px; border-top:1px solid var(--line);
 }
-.status{margin-top:8px; font-size:12px; color:var(--muted); min-height:16px;
+.status{margin-top:9px; font-size:12.5px; color:var(--muted); min-height:17px;
   text-align:center; opacity:0; transition:opacity .25s}
 .status.show{opacity:1}
 
@@ -150,7 +150,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 .task{
   position:relative; z-index:1;
   background:var(--card); border:1px solid var(--line); border-radius:14px;
-  padding:8px 10px; box-shadow:0 2px 8px rgba(50,45,90,.05);
+  padding:9px 11px; box-shadow:0 2px 8px rgba(50,45,90,.05);
   font-size:var(--fs); line-height:1.35;
   transition:background .25s, border-color .25s, transform .18s ease;
   touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
@@ -296,7 +296,7 @@ const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
 const LS_KEY     = 'moiZadachi.v1';                      // ключ локального хранилища
 const LAST_SAVE_KEY = 'moiZadachi.lastSave';             // дата последнего сохранения в облако
 const DRAFT_KEY  = 'moiZadachi.draft';                   // черновик редактирования
-const FONT_SIZES = [11,12.5,14,15.5,17,18.5,20,22,24,26]; // шкала 1..10 — шаг заметнее
+const FONT_SIZES = [12,14,16,18,20,22,24,27,30,34];      // шкала 1..10 — от компактного до крупного
 const COLORS     = ['none','blue','green'];              // порядок переключения по кружку
 const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
 const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
