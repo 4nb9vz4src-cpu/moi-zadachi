@@ -18,6 +18,7 @@
   --green:#2f9e57; --green-bg:#eaf7ef; --green-line:#cdeed9;
   --blue:#2b7cd3;  --blue-bg:#eaf3fd;  --blue-line:#cfe4f9;
   --accent:#6366f1; --danger:#e5484d; --danger-dark:#c62f34;
+  --amber:#eab308; --amber-bg:#fef9c3;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -39,7 +40,7 @@ body{
 .panel-inner{display:grid; grid-template-rows:1fr; transition:grid-template-rows .28s ease}
 .panel.collapsed .panel-inner{grid-template-rows:0fr}
 .pw{overflow:hidden; min-height:0}
-.panel-body{padding:12px 14px 18px}
+.panel-body{padding:14px 14px 18px}
 .row{display:flex; align-items:center; gap:10px}
 .font-row{margin-bottom:14px}
 .lbl{font-size:13px; color:var(--muted); width:44px; flex:none}
@@ -47,27 +48,66 @@ body{
   background:#eef0ff; border-radius:8px; padding:2px 6px}
 input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 
-/* секции кнопок */
-.groups{display:flex; gap:14px; flex-wrap:wrap}
-.group{flex:1; min-width:150px}
+/* --- Группы кнопок --- */
+.groups{display:flex; flex-direction:column; gap:14px}
+.group{}
 .glabel{font-size:11px; text-transform:uppercase; letter-spacing:.06em;
-  color:var(--muted); margin:0 2px 6px}
+  color:var(--muted); margin:0 2px 6px; font-weight:600}
 .grow{display:flex; gap:8px; flex-wrap:wrap}
+
+/* --- Базовая кнопка (второстепенная) --- */
 .tbtn{
   display:flex; align-items:center; gap:6px;
   border:1px solid var(--line); background:#fbfaff; border-radius:12px;
-  height:40px; padding:0 13px; font-size:13.5px; font-weight:600; color:var(--ink);
+  height:36px; padding:0 12px; font-size:13px; font-weight:600; color:var(--ink);
   cursor:pointer; font-family:inherit;
   transition:transform .15s, background .3s, border-color .3s, opacity .2s;
 }
-.tbtn span{font-size:15px}
+.tbtn span{font-size:14px; color:var(--ink)}
 .tbtn:active{transform:scale(.93)}
-.tbtn.done{background:var(--green-bg); border-color:var(--green); transform:scale(1.05)}
+.tbtn.done{background:var(--green-bg); border-color:var(--green)}
 .tbtn.off{opacity:.45}
 .tbtn:disabled{opacity:.35; pointer-events:none}
-.status{margin-top:10px; font-size:12px; color:var(--muted); min-height:16px;
+
+/* --- Главная кнопка (Добавить) --- */
+.tbtn-primary{
+  display:flex; align-items:center; gap:8px;
+  border:none; background:var(--green); color:#fff; border-radius:12px;
+  height:44px; padding:0 18px; font-size:15px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+  box-shadow:0 2px 6px rgba(47,158,87,.35);
+  transition:transform .15s, box-shadow .2s;
+}
+.tbtn-primary span{font-size:17px; color:#fff}
+.tbtn-primary:active{transform:scale(.95); box-shadow:0 1px 3px rgba(47,158,87,.3)}
+
+/* --- Жёлтая кнопка (Комментарии) --- */
+.tbtn-amber{background:var(--amber-bg); border-color:#fde047}
+.tbtn-amber span{color:var(--amber)}
+
+/* --- Блок Облако (отдельный, важный) --- */
+.cloud-box{
+  border:1px solid #dbeafe; background:#f8fbff;
+  border-radius:14px; padding:12px; margin-top:4px;
+}
+.cloud-box .grow{margin-bottom:0}
+.cloud-meta{
+  margin-top:10px; font-size:11px; color:var(--muted); text-align:center;
+  border-top:1px solid #e0e7ff; padding-top:8px;
+}
+
+/* --- Статистика внизу панели --- */
+.stats{
+  margin-top:12px; font-size:12px; color:var(--muted); text-align:center;
+  padding-top:10px; border-top:1px solid var(--line);
+}
+
+/* --- Статусное сообщение --- */
+.status{margin-top:8px; font-size:12px; color:var(--muted); min-height:16px;
   text-align:center; opacity:0; transition:opacity .25s}
 .status.show{opacity:1}
+
+/* --- Ручка сворачивания --- */
 .handle{
   position:absolute; left:50%; transform:translateX(-50%); bottom:-11px;
   width:56px; height:22px; border-radius:999px; border:1px solid var(--line);
@@ -180,19 +220,25 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
         <div class="group">
           <div class="glabel">Задачи</div>
           <div class="grow">
-            <button class="tbtn" id="btnAdd"><span>✨</span>Добавить</button>
-            <button class="tbtn" id="btnComments"><span>🗒️</span>Комментарии</button>
-            <button class="tbtn" id="btnUndo" disabled><span>↩️</span>Отменить</button>
+            <button class="tbtn-primary" id="btnAdd"><span>＋</span>Добавить задачу</button>
+          </div>
+          <div class="grow" style="margin-top:8px">
+            <button class="tbtn tbtn-amber" id="btnComments"><span>💬</span>Комментарии</button>
+            <button class="tbtn" id="btnUndo" disabled><span>↩</span>Отменить</button>
           </div>
         </div>
-        <div class="group">
+
+        <div class="group cloud-box">
           <div class="glabel">Облако</div>
           <div class="grow">
             <button class="tbtn" id="btnSave"><span>☁️</span>Сохранить</button>
             <button class="tbtn" id="btnLoad"><span>📥</span>Загрузить</button>
           </div>
+          <div class="cloud-meta" id="cloudMeta">Сохранений ещё не было</div>
         </div>
       </div>
+
+      <div class="stats" id="stats">Всего: 0 · В процессе: 0 · Выполнено: 0</div>
       <div class="status" id="status"></div>
     </div></div></div>
     <button class="handle" id="panelToggle" title="Свернуть / развернуть панель">▾</button>
@@ -200,7 +246,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 
   <!-- ===== Список задач ===== -->
   <main class="list" id="list"></main>
-  <div class="empty hidden" id="empty">Пока пусто ✨<br>Нажми «Добавить» вверху, чтобы создать первую задачу.<br>Свайп задачи вправо — удаление.</div>
+  <div class="empty hidden" id="empty">Пока пусто.<br>Нажми «Добавить задачу» вверху, чтобы создать первую.<br>Свайп задачи вправо — удаление.</div>
 </div>
 
 <!-- ===== Окно редактирования задачи ===== -->
@@ -227,7 +273,7 @@ const COLORS     = ['none','blue','green'];              // порядок пе�
 const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
 const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
 const UNDO_LIMIT = 10;                                   // сколько шагов отмены хранить
-const SEED_TASKS = []; // <-- сюда вставим твой список задач, когда пришлёшь
+const SEED_TASKS = []; // стартовый список пуст
 
 /* ================= STATE / STORAGE ================= */
 function defaultState(){
@@ -282,7 +328,7 @@ function undo(){
   editingCommentId = null;
   closeSwipe();
   save(); render();
-  setStatus('↩️ Действие отменено'); flash(btnUndo);
+  setStatus('Действие отменено'); flash(btnUndo);
 }
 function updateUndoBtn(){ btnUndo.disabled = history.length === 0; }
 
@@ -293,11 +339,13 @@ const listEl=$('list'), emptyEl=$('empty'), panel=$('panel'),
   btnAdd=$('btnAdd'), btnComments=$('btnComments'), btnUndo=$('btnUndo'),
   btnSave=$('btnSave'), btnLoad=$('btnLoad'),
   panelToggle=$('panelToggle'), statusEl=$('status'),
+  cloudMeta=$('cloudMeta'), statsEl=$('stats'),
   overlay=$('overlay'), sheetTitle=$('sheetTitle'), sheetText=$('sheetText'),
   sheetOk=$('sheetOk'), sheetCancel=$('sheetCancel');
 
 const findTask = id => state.tasks.find(t=>t.id===id);
 const timeNow = () => new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+const dateNow = () => new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
 
 /* ================= ОБРАТНАЯ СВЯЗЬ ================= */
 let statusTimer;
@@ -311,11 +359,28 @@ function flash(btn){
   btn.classList.add('done'); setTimeout(()=>btn.classList.remove('done'), 600);
 }
 
+/* ================= СТАТИСТИКА И МЕТА ================= */
+function updateStats(){
+  const total = state.tasks.length;
+  const inProgress = state.tasks.filter(t=>t.color==='blue').length;
+  const done = state.tasks.filter(t=>t.color==='green').length;
+  statsEl.textContent = `Всего: ${total} · В процессе: ${inProgress} · Выполнено: ${done}`;
+}
+function updateCloudMeta(){
+  const last = localStorage.getItem('moiZadachi.lastSave');
+  if(last){
+    const d = new Date(last);
+    cloudMeta.textContent = `Последнее сохранение: ${d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})} ${d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`;
+  } else {
+    cloudMeta.textContent = 'Сохранений ещё не было';
+  }
+}
+
 /* ================= СВАЙП-УДАЛЕНИЕ ================= */
 function resetDelBtn(sw){
   clearTimeout(sw.timer);
   sw.delBtn.classList.remove('confirm');
-  sw.delBtn.innerHTML = '<span>🗑️</span> Удалить';
+  sw.delBtn.innerHTML = '<span>🗑</span> Удалить';
 }
 function closeSwipe(){
   if(!openSwipe) return;
@@ -378,11 +443,11 @@ function attachSwipe(wrap, card, delBtn, task){
     if(wrap.classList.contains('open')){ closeSwipe(); e.stopPropagation(); e.preventDefault(); }
   }, true);
 
-  // двухшаговое удаление: «🗑️ Удалить» → «Удалить?» → удалено
+  // двухшаговое удаление: «🗑 Удалить» → «Точно?» → удалено
   delBtn.addEventListener('click', ()=>{
     if(!delBtn.classList.contains('confirm')){
       delBtn.classList.add('confirm');
-      delBtn.innerHTML = '<span>🗑️</span> Точно?';
+      delBtn.innerHTML = '<span>🗑</span> Точно?';
       if(openSwipe && openSwipe.delBtn===delBtn){
         openSwipe.timer = setTimeout(()=>{ if(openSwipe) resetDelBtn(openSwipe); }, 2500);
       }
@@ -393,7 +458,7 @@ function attachSwipe(wrap, card, delBtn, task){
     state.tasks = state.tasks.filter(t=>t.id!==task.id);
     if(editingCommentId===task.id) editingCommentId = null;
     save(); render();
-    setStatus('Задача №' + task.num + ' удалена · ↩️ можно отменить');
+    setStatus('Задача №' + task.num + ' удалена · ↩ можно отменить');
   });
 }
 
@@ -407,7 +472,7 @@ function renderTask(task){
   // красная зона удаления (под карточкой, открывается свайпом вправо)
   const delBtn = document.createElement('button');
   delBtn.className = 'del-zone'; delBtn.type = 'button';
-  delBtn.innerHTML = '<span>🗑️</span> Удалить';
+  delBtn.innerHTML = '<span>🗑</span> Удалить';
 
   const card = document.createElement('div');
   card.className = 'task color-' + task.color;
@@ -475,6 +540,8 @@ function render(){
   openSwipe = null;
   applyFont();
   updateUndoBtn();
+  updateStats();
+  updateCloudMeta();
   panel.classList.toggle('collapsed', state.panelCollapsed);
   panelToggle.textContent = state.panelCollapsed ? '▴' : '▾';
   btnComments.classList.toggle('off', state.commentsCollapsed);
@@ -554,19 +621,19 @@ panelToggle.addEventListener('click', ()=>{
   state.panelCollapsed = !state.panelCollapsed;
   save(); render();
 });
-  
+
 /* ================= ОБЛАКО (ntfy) — с поддержкой вложений ================= */
 async function saveToCloud(){
   setStatus('Сохраняю в облако…');
   try{
-    const payload = JSON.stringify(state);
-    // ntfy автоматически превращает длинные сообщения во вложение — это нормально
-    const res = await fetch(NTFY_URL, { method:'POST', body: payload });
+    const res = await fetch(NTFY_URL, { method:'POST', body: JSON.stringify(state) });
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    setStatus('✅ Сохранено в облако · ' + timeNow()); flash(btnSave);
-  }catch(e){ 
+    localStorage.setItem('moiZadachi.lastSave', new Date().toISOString());
+    updateCloudMeta();
+    setStatus('Сохранено в облако · ' + timeNow()); flash(btnSave);
+  }catch(e){
     console.error(e);
-    setStatus('⚠️ Нет сети или облако недоступно'); 
+    setStatus('⚠️ Нет сети или облако недоступно');
   }
 }
 
@@ -576,55 +643,53 @@ async function loadFromCloud(){
   try{
     const res = await fetch(NTFY_URL + '/json?poll=1&since=all');
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    
-    const text = await res.text();
-    const lines = text.trim().split('\n').filter(Boolean);
-    
-    // Ищем последнее сообщение с задачами (пролистываем с конца)
+    const lines = (await res.text()).trim().split('\n').filter(Boolean);
+
+    let data = null; // объявлена ДО цикла — видна и после него
+
+    // Ищем последнее сохранение (пролистываем с конца)
     for(let i = lines.length - 1; i >= 0; i--){
-      let evt; 
+      let evt;
       try{ evt = JSON.parse(lines[i]); }catch(e){ continue; }
       if(evt.event !== 'message') continue;
-      
-      let data = null;
-      
+
       // Вариант 1: данные прямо в сообщении (маленький объём)
       if(evt.message){
-        try{ 
-          data = JSON.parse(evt.message); 
-          if(data && Array.isArray(data.tasks)) break; // нашли!
+        try{
+          const d = JSON.parse(evt.message);
+          if(d && Array.isArray(d.tasks)){ data = d; break; }
         }catch(e){}
       }
-      
-      // Вариант 2: данные во вложении (большой объём, твой случай)
+
+      // Вариант 2: данные во вложении (большой объём — твой случай)
       if(evt.attachment && evt.attachment.url){
         try{
           setStatus('Скачиваю вложение…');
           const fileRes = await fetch(evt.attachment.url);
-          if(!fileRes.ok) continue;
-          data = await fileRes.json();
-          if(data && Array.isArray(data.tasks)) break; // нашли!
+          if(fileRes.ok){
+            const d = await fileRes.json();
+            if(d && Array.isArray(d.tasks)){ data = d; break; }
+          }
         }catch(e){ console.warn('Не удалось загрузить вложение', e); }
       }
     }
-    
-    if(data && Array.isArray(data.tasks)){
+
+    if(data){
       pushHistory(); // снимок перед заменой — можно отменить
-      state = normalizeState(data); 
-      save(); 
+      state = normalizeState(data);
+      save();
       render();
-      setStatus('✅ Загружено из облака · ' + timeNow()); 
+      setStatus('Загружено из облака · ' + timeNow());
       flash(btnLoad);
     } else {
       setStatus('⚠️ В облаке пока нет сохранений');
     }
-  }catch(e){ 
+  }catch(e){
     console.error(e);
-    setStatus('⚠️ Нет сети или облако недоступно'); 
+    setStatus('⚠️ Нет сети или облако недоступно');
   }
 }
 
-// Привязываем к кнопкам
 btnSave.addEventListener('click', saveToCloud);
 btnLoad.addEventListener('click', loadFromCloud);
 
