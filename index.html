@@ -18,7 +18,7 @@
   --green:#2f9e57; --green-bg:#eaf7ef; --green-line:#cdeed9;
   --blue:#2b7cd3;  --blue-bg:#eaf3fd;  --blue-line:#cfe4f9;
   --accent:#6366f1; --danger:#e5484d; --danger-dark:#c62f34;
-  --amber:#eab308; --amber-bg:#fef9c3;
+  --amber:#b45309; --amber-bg:#fef9e7;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -28,6 +28,7 @@ body{
   padding-top:env(safe-area-inset-top);
   padding-bottom:calc(env(safe-area-inset-bottom) + 30px);
   min-height:100vh; touch-action:manipulation;
+  overflow-x:hidden; /* страница никогда не расширяется из-за свайпа */
 }
 .wrap{max-width:680px; margin:0 auto; padding:0 12px}
 .hidden{display:none!important}
@@ -48,14 +49,14 @@ body{
   background:#eef0ff; border-radius:8px; padding:2px 6px}
 input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 
-/* --- Группы кнопок --- */
-.groups{display:flex; flex-direction:column; gap:14px}
-.group{}
+/* --- Две колонки: слева задачи, справа облако (на узком экране — друг под другом) --- */
+.groups{display:flex; gap:12px; align-items:stretch; flex-wrap:wrap}
+.g-main{flex:1.3; min-width:230px}
 .glabel{font-size:11px; text-transform:uppercase; letter-spacing:.06em;
   color:var(--muted); margin:0 2px 6px; font-weight:600}
 .grow{display:flex; gap:8px; flex-wrap:wrap}
 
-/* --- Базовая кнопка (второстепенная) --- */
+/* --- Кнопки --- */
 .tbtn{
   display:flex; align-items:center; gap:6px;
   border:1px solid var(--line); background:#fbfaff; border-radius:12px;
@@ -69,40 +70,43 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 .tbtn.off{opacity:.45}
 .tbtn:disabled{opacity:.35; pointer-events:none}
 
-/* --- Главная кнопка (Добавить) --- */
+/* Главная кнопка «Добавить» */
 .tbtn-primary{
   display:flex; align-items:center; gap:8px;
   border:none; background:var(--green); color:#fff; border-radius:12px;
-  height:44px; padding:0 18px; font-size:15px; font-weight:700;
+  height:46px; padding:0 20px; font-size:15.5px; font-weight:700;
   cursor:pointer; font-family:inherit;
-  box-shadow:0 2px 6px rgba(47,158,87,.35);
+  box-shadow:0 3px 8px rgba(47,158,87,.35);
   transition:transform .15s, box-shadow .2s;
 }
-.tbtn-primary span{font-size:17px; color:#fff}
+.tbtn-primary span{font-size:18px; color:#fff; font-weight:600}
 .tbtn-primary:active{transform:scale(.95); box-shadow:0 1px 3px rgba(47,158,87,.3)}
+.tbtn-primary.done{background:#24824a}
 
-/* --- Жёлтая кнопка (Комментарии) --- */
-.tbtn-amber{background:var(--amber-bg); border-color:#fde047}
-.tbtn-amber span{color:var(--amber)}
+/* Второстепенные кнопки — рядом ниже */
+.grow.secondary{margin-top:8px}
+.grow.secondary .tbtn{height:32px; padding:0 10px; font-size:12px; font-weight:600; color:var(--muted); background:#f7f6fb}
+.grow.secondary .tbtn span{font-size:13px; color:var(--muted)}
+.grow.secondary .tbtn.done{color:var(--ink)}
+.tbtn-amber{background:var(--amber-bg)!important; border-color:#f2e3b3!important; color:var(--amber)!important}
+.tbtn-amber span{color:var(--amber)!important}
 
-/* --- Блок Облако (отдельный, важный) --- */
+/* --- Блок «Облако» справа, в своей рамке --- */
 .cloud-box{
-  border:1px solid #dbeafe; background:#f8fbff;
-  border-radius:14px; padding:12px; margin-top:4px;
+  flex:1; min-width:215px;
+  border:1px solid #dbe3f8; background:#f8faff;
+  border-radius:14px; padding:11px 12px 10px;
 }
-.cloud-box .grow{margin-bottom:0}
 .cloud-meta{
   margin-top:10px; font-size:11px; color:var(--muted); text-align:center;
-  border-top:1px solid #e0e7ff; padding-top:8px;
+  border-top:1px solid #e4e9f7; padding-top:7px; line-height:1.4;
 }
 
-/* --- Статистика внизу панели --- */
+/* --- Статистика и статус --- */
 .stats{
   margin-top:12px; font-size:12px; color:var(--muted); text-align:center;
   padding-top:10px; border-top:1px solid var(--line);
 }
-
-/* --- Статусное сообщение --- */
 .status{margin-top:8px; font-size:12px; color:var(--muted); min-height:16px;
   text-align:center; opacity:0; transition:opacity .25s}
 .status.show{opacity:1}
@@ -118,10 +122,12 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 
 /* ----- Список задач + свайп ----- */
 .list{margin-top:22px; display:flex; flex-direction:column; gap:8px}
-.swipe-wrap{position:relative}
+.swipe-wrap{
+  position:relative; border-radius:14px; overflow:hidden; /* карточка обрезается по краю — масштаб не прыгает */
+}
 .del-zone{
   position:absolute; left:0; top:0; bottom:0; width:104px; z-index:0;
-  border:none; border-radius:14px 0 0 14px; background:var(--danger); color:#fff;
+  border:none; background:var(--danger); color:#fff;
   font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
   display:flex; align-items:center; justify-content:center; gap:5px; padding:0 6px;
   transition:background .2s;
@@ -168,9 +174,10 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
   background:rgba(255,255,255,.65); border-left:3px solid #d8d4ea;
   border-radius:8px; padding:5px 9px; cursor:pointer; white-space:pre-wrap; word-break:break-word;
 }
+/* минимум 16px — иначе iPhone зумит страницу при фокусе (правило iOS) */
 .comment-edit{
   margin:6px 0 2px calc(var(--fs)*1.7 + 8px); width:calc(100% - var(--fs)*1.7 - 8px);
-  font:inherit; font-size:calc(var(--fs)*0.85);
+  font-family:inherit; font-size:16px; line-height:1.35;
   border:1.5px solid var(--accent); border-radius:10px; padding:6px 9px;
   resize:vertical; background:#fff; outline:none;
 }
@@ -191,7 +198,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 @media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:20px}}
 .sheet-title{font-weight:700; margin-bottom:10px; font-size:15px}
 #sheetText{
-  width:100%; min-height:130px; font:inherit; font-size:var(--fs); line-height:1.4;
+  width:100%; min-height:130px; font-family:inherit; font-size:16px; line-height:1.4; /* тоже >=16px против зума */
   border:1.5px solid var(--line); border-radius:12px; padding:10px 12px;
   resize:vertical; outline:none;
 }
@@ -217,18 +224,21 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
         <span class="badge" id="fontBadge">5</span>
       </div>
       <div class="groups">
-        <div class="group">
+
+        <!-- Левая колонка: задачи -->
+        <div class="g-main">
           <div class="glabel">Задачи</div>
           <div class="grow">
             <button class="tbtn-primary" id="btnAdd"><span>＋</span>Добавить задачу</button>
           </div>
-          <div class="grow" style="margin-top:8px">
+          <div class="grow secondary">
             <button class="tbtn tbtn-amber" id="btnComments"><span>💬</span>Комментарии</button>
             <button class="tbtn" id="btnUndo" disabled><span>↩</span>Отменить</button>
           </div>
         </div>
 
-        <div class="group cloud-box">
+        <!-- Правая колонка: облако -->
+        <div class="cloud-box">
           <div class="glabel">Облако</div>
           <div class="grow">
             <button class="tbtn" id="btnSave"><span>☁️</span>Сохранить</button>
@@ -236,6 +246,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
           </div>
           <div class="cloud-meta" id="cloudMeta">Сохранений ещё не было</div>
         </div>
+
       </div>
 
       <div class="stats" id="stats">Всего: 0 · В процессе: 0 · Выполнено: 0</div>
@@ -267,13 +278,14 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 const NTFY_TOPIC = 'zadachi-sync-x7q2m9v4k1p8';          // твой секретный адрес в облаке
 const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
 const LS_KEY     = 'moiZadachi.v1';                      // ключ локального хранилища
+const LAST_SAVE_KEY = 'moiZadachi.lastSave';             // дата последнего сохранения в облако
 const DRAFT_KEY  = 'moiZadachi.draft';                   // черновик редактирования
 const FONT_SIZES = [11.5,12.5,13.5,14.5,15.5,16.5,17.5,19,20.5,22]; // шкала 1..10
 const COLORS     = ['none','blue','green'];              // порядок переключения по кружку
 const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
 const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
 const UNDO_LIMIT = 10;                                   // сколько шагов отмены хранить
-const SEED_TASKS = []; // стартовый список пуст
+const SEED_TASKS = []; // стартовый список пуст — чистый лист
 
 /* ================= STATE / STORAGE ================= */
 function defaultState(){
@@ -345,7 +357,6 @@ const listEl=$('list'), emptyEl=$('empty'), panel=$('panel'),
 
 const findTask = id => state.tasks.find(t=>t.id===id);
 const timeNow = () => new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-const dateNow = () => new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
 
 /* ================= ОБРАТНАЯ СВЯЗЬ ================= */
 let statusTimer;
@@ -359,7 +370,7 @@ function flash(btn){
   btn.classList.add('done'); setTimeout(()=>btn.classList.remove('done'), 600);
 }
 
-/* ================= СТАТИСТИКА И МЕТА ================= */
+/* ================= СТАТИСТИКА / МЕТА ОБЛАКА ================= */
 function updateStats(){
   const total = state.tasks.length;
   const inProgress = state.tasks.filter(t=>t.color==='blue').length;
@@ -367,10 +378,11 @@ function updateStats(){
   statsEl.textContent = `Всего: ${total} · В процессе: ${inProgress} · Выполнено: ${done}`;
 }
 function updateCloudMeta(){
-  const last = localStorage.getItem('moiZadachi.lastSave');
+  const last = localStorage.getItem(LAST_SAVE_KEY);
   if(last){
     const d = new Date(last);
-    cloudMeta.textContent = `Последнее сохранение: ${d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})} ${d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`;
+    cloudMeta.textContent = 'Сохранено: ' + d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})
+      + ' в ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
   } else {
     cloudMeta.textContent = 'Сохранений ещё не было';
   }
@@ -628,7 +640,7 @@ async function saveToCloud(){
   try{
     const res = await fetch(NTFY_URL, { method:'POST', body: JSON.stringify(state) });
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    localStorage.setItem('moiZadachi.lastSave', new Date().toISOString());
+    localStorage.setItem(LAST_SAVE_KEY, new Date().toISOString());
     updateCloudMeta();
     setStatus('Сохранено в облако · ' + timeNow()); flash(btnSave);
   }catch(e){
