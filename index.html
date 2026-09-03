@@ -79,7 +79,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 .tbtn-primary:active{transform:scale(.95); box-shadow:0 1px 3px rgba(47,158,87,.3)}
 .tbtn-primary.done{background:#24824a}
 
-/* Второстепенные кнопки — рядом ниже */
+/* Второстепенные кнопки */
 .grow.secondary{margin-top:10px}
 .grow.secondary .tbtn{height:36px; padding:0 12px; font-size:13px; font-weight:600; color:var(--muted); background:#f7f6fb}
 .grow.secondary .tbtn span{font-size:14px; color:var(--muted)}
@@ -111,6 +111,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 .cloud-box.open .cloud-inner{grid-template-rows:1fr}
 .cloud-pw{overflow:hidden; min-height:0}
 .cloud-body{padding:2px 14px 14px}
+.cloud-hint{font-size:11px; color:var(--muted); margin-top:8px; line-height:1.45}
 
 /* --- Статистика и статус --- */
 .stats{
@@ -135,7 +136,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 .swipe-wrap{
   position:relative; border-radius:14px; overflow:hidden; /* карточка обрезается по краю — масштаб не прыгает */
 }
-/* зона удаления полностью невидима, пока не начался свайп — никаких красных краёв */
+/* зона удаления невидима, пока не начался свайп — никаких красных краёв */
 .del-zone{
   position:absolute; left:0; top:0; bottom:0; width:104px; z-index:0;
   border:none; background:var(--danger); color:#fff;
@@ -202,14 +203,12 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 @keyframes up{from{transform:translateY(40px); opacity:0}}
 @media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:22px}}
 .sheet-title{font-weight:700; margin-bottom:10px; font-size:17px; text-align:center}
-/* контекст: к какой задаче пишем комментарий (мелкий серый текст) */
 .sheet-context{
   font-size:13px; color:var(--muted); line-height:1.4;
   background:#f7f6fb; border:1px solid var(--line); border-radius:10px;
   padding:8px 11px; margin-bottom:12px;
   max-height:76px; overflow:hidden; white-space:pre-wrap; word-break:break-word;
 }
-/* минимум 16px — иначе iPhone зумит страницу при фокусе */
 #sheetText{
   width:100%; min-height:40vh; font-family:inherit; font-size:17px; line-height:1.45;
   border:1.5px solid var(--line); border-radius:14px; padding:14px 15px;
@@ -252,14 +251,15 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
         <button class="cloud-head" id="cloudToggle">
           <span class="cicon">☁️</span>
           <span class="ctitle">Облако</span>
-          <span class="cmeta" id="cloudMeta">Сохранений ещё не было</span>
+          <span class="cmeta" id="cloudMeta">Подключаюсь…</span>
           <span class="cchev">▾</span>
         </button>
         <div class="cloud-inner"><div class="cloud-pw"><div class="cloud-body">
           <div class="grow">
-            <button class="tbtn" id="btnSave"><span>☁️</span>Сохранить</button>
+            <button class="tbtn" id="btnSave"><span>☁️</span>Сохранить в ntfy</button>
             <button class="tbtn" id="btnLoad"><span>📥</span>Загрузить</button>
           </div>
+          <div class="cloud-hint">Автосохранение в GitHub Gist идёт само после каждого изменения.<br>Кнопки ntfy — ручной резерв; при загрузке ntfy в приоритете, даже если данные там старше.</div>
         </div></div></div>
       </div>
 
@@ -290,17 +290,20 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 <script>
 'use strict';
 /* ================= CONFIG ================= */
-const NTFY_TOPIC = 'zadachi-sync-x7q2m9v4k1p8';          // твой секретный адрес в облаке
-const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
-const LS_KEY     = 'moiZadachi.v1';                      // ключ локального хранилища
-const LAST_SAVE_KEY = 'moiZadachi.lastSave';             // дата последнего сохранения в облако
-const DRAFT_KEY  = 'moiZadachi.draft';                   // черновик редактирования
-const FONT_SIZES = [12,14,16,18,20,22,24,27,30,34];      // шкала 1..10
-const COLORS     = ['none','blue','green'];              // порядок переключения по кружку
-const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
-const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
-const UNDO_LIMIT = 10;                                   // сколько шагов отмены хранить
-const SEED_TASKS = []; // стартовый список пуст — чистый лист
+const NTFY_TOPIC  = 'zadachi-sync-x7q2m9v4k1p8';         // адрес ручного резерва в ntfy
+const NTFY_URL    = 'https://ntfy.sh/' + NTFY_TOPIC;
+const GIST_TOKEN  = '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'; // токен GitHub (только gist)
+const GIST_ID_KEY = 'moiZadachi.gistId';                 // где хранится id нашего Gist'а
+const LS_KEY      = 'moiZadachi.v1';                     // локальное хранилище
+const LAST_SAVE_KEY = 'moiZadachi.lastSave';             // дата последнего авто-сохранения
+const DRAFT_KEY   = 'moiZadachi.draft';                  // черновик редактирования
+const FONT_SIZES  = [12,14,16,18,20,22,24,27,30,34];     // шкала 1..10
+const COLORS      = ['none','blue','green'];             // порядок переключения по кружку
+const ZONE_W      = 104;                                 // ширина зоны «Удалить» (px)
+const OPEN_TH     = 55;                                  // порог свайпа (px)
+const UNDO_LIMIT  = 10;                                  // шагов отмены
+const AUTOSAVE_DELAY = 8000;                             // авто-сохранение через 8 сек после изменения
+const SEED_TASKS  = []; // стартовый список пуст — чистый лист
 
 /* ================= STATE / STORAGE ================= */
 function defaultState(){
@@ -320,7 +323,7 @@ function normalizeState(s){ // защита от битых данных: при
   d.fontSize = Math.min(10, Math.max(1, (s.fontSize|0) || 5));
   d.commentsCollapsed = !!s.commentsCollapsed;
   d.panelCollapsed = !!s.panelCollapsed;
-  d.cloudCollapsed = s.cloudCollapsed !== false; // по умолчанию свёрнуто
+  d.cloudCollapsed = s.cloudCollapsed !== false;
   return d;
 }
 function loadState(){
@@ -330,9 +333,10 @@ function loadState(){
   }catch(e){ console.warn('Не удалось прочитать хранилище', e); }
   return defaultState();
 }
-function save(){
+function save(){ // локальное сохранение + запуск авто-бэкапа в Gist
   try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
   catch(e){ setStatus('⚠️ Не удалось сохранить локально'); }
+  scheduleAutoSave();
 }
 let state = loadState();
 let openSwipe = null;  // {wrap, card, delBtn, timer} — карточка с открытой кнопкой удаления
@@ -394,12 +398,79 @@ function updateCloudMeta(){
   const last = localStorage.getItem(LAST_SAVE_KEY);
   if(last){
     const d = new Date(last);
-    cloudMeta.textContent = d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})
+    cloudMeta.textContent = 'Автосохранение ✓ ' + d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})
       + ' в ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
   } else {
-    cloudMeta.textContent = 'Сохранений ещё не было';
+    cloudMeta.textContent = 'Автосохранение: ещё не было';
   }
 }
+
+/* ================= GIST: АВТО-БЭКАП (главное хранилище, бессрочно) ================= */
+const GH_HEADERS = { 'Authorization':'token ' + GIST_TOKEN,
+                     'Accept':'application/vnd.github+json',
+                     'Content-Type':'application/json' };
+let gistId = localStorage.getItem(GIST_ID_KEY) || null;
+let autoSaveTimer = null, savingNow = false, pendingSave = false;
+
+function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveToGist, AUTOSAVE_DELAY);
+}
+async function findExistingGist(){ // если id потерялся — ищем наш Gist по имени файла
+  const res = await fetch('https://api.github.com/gists?per_page=100', { headers: GH_HEADERS });
+  if(!res.ok) return null;
+  const gists = await res.json();
+  const g = gists.find(x => x.files && x.files['moi-zadachi.json']);
+  return g ? g.id : null;
+}
+async function saveToGist(){
+  if(savingNow){ pendingSave = true; return; } // не дублируем параллельные запросы
+  savingNow = true;
+  const body = JSON.stringify({ files: { 'moi-zadachi.json': { content: JSON.stringify(state) } } });
+  try{
+    if(!gistId){ // первый запуск: создаём или находим существующий
+      gistId = await findExistingGist();
+      if(!gistId){
+        const res = await fetch('https://api.github.com/gists', { method:'POST', headers:GH_HEADERS,
+          body: JSON.stringify({ description:'Мои задачи — автосохранение', public:false,
+            files:{ 'moi-zadachi.json': { content: JSON.stringify(state) } } }) });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        gistId = (await res.json()).id;
+      }
+      localStorage.setItem(GIST_ID_KEY, gistId);
+    } else {
+      const res = await fetch('https://api.github.com/gists/' + gistId, { method:'PATCH', headers:GH_HEADERS, body });
+      if(res.status === 404){ // Gist удалили вручную — создадим заново при следующем сохранении
+        gistId = null; localStorage.removeItem(GIST_ID_KEY);
+      } else if(!res.ok){
+        throw new Error('HTTP ' + res.status);
+      }
+    }
+    localStorage.setItem(LAST_SAVE_KEY, new Date().toISOString());
+    updateCloudMeta();
+  }catch(e){
+    console.warn('Gist: сохранение не удалось', e);
+    cloudMeta.textContent = 'Автосохранение: ошибка сети';
+  }
+  savingNow = false;
+  if(pendingSave){ pendingSave = false; scheduleAutoSave(); }
+}
+async function loadFromGist(){ // тихая загрузка при старте; вернёт данные или null
+  try{
+    if(!gistId){ gistId = await findExistingGist(); if(gistId) localStorage.setItem(GIST_ID_KEY, gistId); }
+    if(!gistId) return null;
+    const res = await fetch('https://api.github.com/gists/' + gistId, { headers: GH_HEADERS });
+    if(!res.ok) return null;
+    const g = await res.json();
+    const content = g.files && g.files['moi-zadachi.json'] && g.files['moi-zadachi.json'].content;
+    if(!content) return null;
+    const data = JSON.parse(content);
+    return (data && Array.isArray(data.tasks)) ? data : null;
+  }catch(e){ console.warn('Gist: загрузка не удалась', e); return null; }
+}
+// авто-бэкап при уходе со страницы / скрытии приложения
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) saveToGist(); });
+window.addEventListener('pagehide', ()=>{ saveToGist(); });
 
 /* ================= СВАЙП-УДАЛЕНИЕ ================= */
 function resetDelBtn(sw){
@@ -627,7 +698,10 @@ overlay.addEventListener('click', e=>{ if(e.target===overlay) closeSheet(); });
 (function restoreDraft(){
   try{
     const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-    if(d && findTask(d.id)) openSheet(d.mode === 'comment' ? 'comment' : 'task', d.id), sheetText.value = d.text;
+    if(d && findTask(d.id)){
+      openSheet(d.mode === 'comment' ? 'comment' : 'task', d.id);
+      sheetText.value = d.text;
+    }
   }catch(e){}
 })();
 
@@ -647,79 +721,87 @@ cloudToggle.addEventListener('click', ()=>{
   save(); render();
 });
 
-/* ================= ОБЛАКО (ntfy) — с поддержкой вложений ================= */
-async function saveToCloud(){
-  setStatus('Сохраняю в облако…');
+/* ================= РУЧНОЕ ОБЛАКО (ntfy) — резерв; при загрузке в приоритете ================= */
+async function saveToNtfy(){
+  setStatus('Сохраняю в ntfy…');
   try{
     const res = await fetch(NTFY_URL, { method:'POST', body: JSON.stringify(state) });
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    localStorage.setItem(LAST_SAVE_KEY, new Date().toISOString());
-    updateCloudMeta();
-    setStatus('Сохранено в облако · ' + timeNow()); flash(btnSave);
+    setStatus('Сохранено в ntfy · ' + timeNow() + ' (живёт ~12 ч)'); flash(btnSave);
   }catch(e){
     console.error(e);
-    setStatus('⚠️ Нет сети или облако недоступно');
+    setStatus('⚠️ Нет сети или ntfy недоступен');
   }
 }
 
-async function loadFromCloud(){
-  if(state.tasks.length && !confirm('На устройстве есть ' + state.tasks.length + ' задач. Заменить их данными из облака?')) return;
-  setStatus('Загружаю из облака…');
+async function readFromNtfy(){ // вернёт данные или null
   try{
     const res = await fetch(NTFY_URL + '/json?poll=1&since=all');
-    if(!res.ok) throw new Error('HTTP ' + res.status);
+    if(!res.ok) return null;
     const lines = (await res.text()).trim().split('\n').filter(Boolean);
-
-    let data = null;
-
-    // Ищем последнее сохранение (пролистываем с конца)
-    for(let i = lines.length - 1; i >= 0; i--){
+    for(let i = lines.length - 1; i >= 0; i--){ // ищем последнее сохранение с конца
       let evt;
       try{ evt = JSON.parse(lines[i]); }catch(e){ continue; }
       if(evt.event !== 'message') continue;
 
-      // Вариант 1: данные прямо в сообщении (маленький объём)
+      // данные прямо в сообщении (маленький объём)
       if(evt.message){
         try{
           const d = JSON.parse(evt.message);
-          if(d && Array.isArray(d.tasks)){ data = d; break; }
+          if(d && Array.isArray(d.tasks)) return d;
         }catch(e){}
       }
-
-      // Вариант 2: данные во вложении (большой объём — твой случай)
+      // данные во вложении (большой объём)
       if(evt.attachment && evt.attachment.url){
         try{
-          setStatus('Скачиваю вложение…');
           const fileRes = await fetch(evt.attachment.url);
           if(fileRes.ok){
             const d = await fileRes.json();
-            if(d && Array.isArray(d.tasks)){ data = d; break; }
+            if(d && Array.isArray(d.tasks)) return d;
           }
-        }catch(e){ console.warn('Не удалось загрузить вложение', e); }
+        }catch(e){}
       }
     }
-
-    if(data){
-      pushHistory(); // снимок перед заменой — можно отменить
-      state = normalizeState(data);
-      save();
-      render();
-      setStatus('Загружено из облака · ' + timeNow());
-      flash(btnLoad);
-    } else {
-      setStatus('⚠️ В облаке пока нет сохранений');
-    }
-  }catch(e){
-    console.error(e);
-    setStatus('⚠️ Нет сети или облако недоступно');
-  }
+  }catch(e){ console.warn('ntfy: чтение не удалось', e); }
+  return null;
 }
 
-btnSave.addEventListener('click', saveToCloud);
-btnLoad.addEventListener('click', loadFromCloud);
+function applyLoaded(data, sourceLabel){
+  pushHistory(); // снимок перед заменой — можно отменить
+  state = normalizeState(data);
+  save(); render();
+  setStatus('Загружено: ' + sourceLabel + ' · ' + timeNow());
+  flash(btnLoad);
+}
+
+btnLoad.addEventListener('click', async ()=>{
+  if(state.tasks.length && !confirm('На устройстве есть ' + state.tasks.length + ' задач. Заменить их данными из облака?')) return;
+  setStatus('Загружаю из ntfy…');
+  // 1) приоритет — ntfy, даже если данные там старше
+  const ntfyData = await readFromNtfy();
+  if(ntfyData){ applyLoaded(ntfyData, 'ntfy'); saveToGist(); return; }
+  // 2) запасной вариант — Gist
+  setStatus('ntfy пуст · Загружаю из GitHub…');
+  const gistData = await loadFromGist();
+  if(gistData){ applyLoaded(gistData, 'GitHub Gist'); return; }
+  setStatus('⚠️ В облаках пока нет сохранений');
+});
+
+btnSave.addEventListener('click', saveToNtfy);
 
 /* ================= СТАРТ ================= */
-render();
+(async function start(){
+  render();
+  // если устройство новое (список пуст) — тихо подтягиваем последний бэкап из Gist'а
+  if(state.tasks.length === 0){
+    const data = await loadFromGist();
+    if(data && data.tasks.length){
+      state = normalizeState(data);
+      save(); render();
+      setStatus('Восстановлено из автосохранения · ' + timeNow());
+    }
+  }
+})();
 </script>
 </body>
 </html>
