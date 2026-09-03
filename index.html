@@ -554,38 +554,79 @@ panelToggle.addEventListener('click', ()=>{
   state.panelCollapsed = !state.panelCollapsed;
   save(); render();
 });
-
-/* ================= ОБЛАКО (ntfy) ================= */
-btnSave.addEventListener('click', async ()=>{
+  
+/* ================= ОБЛАКО (ntfy) — с поддержкой вложений ================= */
+async function saveToCloud(){
   setStatus('Сохраняю в облако…');
   try{
-    const res = await fetch(NTFY_URL, { method:'POST', body: JSON.stringify(state) });
-    if(!res.ok) throw 0;
+    const payload = JSON.stringify(state);
+    // ntfy автоматически превращает длинные сообщения во вложение — это нормально
+    const res = await fetch(NTFY_URL, { method:'POST', body: payload });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
     setStatus('✅ Сохранено в облако · ' + timeNow()); flash(btnSave);
-  }catch(e){ setStatus('⚠️ Нет сети или облако недоступно'); }
-});
-btnLoad.addEventListener('click', async ()=>{
+  }catch(e){ 
+    console.error(e);
+    setStatus('⚠️ Нет сети или облако недоступно'); 
+  }
+}
+
+async function loadFromCloud(){
   if(state.tasks.length && !confirm('На устройстве есть ' + state.tasks.length + ' задач. Заменить их данными из облака?')) return;
   setStatus('Загружаю из облака…');
   try{
     const res = await fetch(NTFY_URL + '/json?poll=1&since=all');
-    const lines = (await res.text()).trim().split('\n').filter(Boolean);
-    for(let i=lines.length-1; i>=0; i--){ // ищем последнее валидное сообщение с задачами
-      let evt; try{ evt = JSON.parse(lines[i]); }catch(e){ continue; }
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    
+    const text = await res.text();
+    const lines = text.trim().split('\n').filter(Boolean);
+    
+    // Ищем последнее сообщение с задачами (пролистываем с конца)
+    for(let i = lines.length - 1; i >= 0; i--){
+      let evt; 
+      try{ evt = JSON.parse(lines[i]); }catch(e){ continue; }
       if(evt.event !== 'message') continue;
-      try{
-        const data = JSON.parse(evt.message);
-        if(data && Array.isArray(data.tasks)){
-          pushHistory(); // снимок перед заменой — случайную загрузку тоже можно отменить
-          state = normalizeState(data); save(); render();
-          setStatus('✅ Загружено из облака · ' + timeNow()); flash(btnLoad);
-          return;
-        }
-      }catch(e){}
+      
+      let data = null;
+      
+      // Вариант 1: данные прямо в сообщении (маленький объём)
+      if(evt.message){
+        try{ 
+          data = JSON.parse(evt.message); 
+          if(data && Array.isArray(data.tasks)) break; // нашли!
+        }catch(e){}
+      }
+      
+      // Вариант 2: данные во вложении (большой объём, твой случай)
+      if(evt.attachment && evt.attachment.url){
+        try{
+          setStatus('Скачиваю вложение…');
+          const fileRes = await fetch(evt.attachment.url);
+          if(!fileRes.ok) continue;
+          data = await fileRes.json();
+          if(data && Array.isArray(data.tasks)) break; // нашли!
+        }catch(e){ console.warn('Не удалось загрузить вложение', e); }
+      }
     }
-    setStatus('⚠️ В облаке пока нет сохранений');
-  }catch(e){ setStatus('⚠️ Нет сети или облако недоступно'); }
-});
+    
+    if(data && Array.isArray(data.tasks)){
+      pushHistory(); // снимок перед заменой — можно отменить
+      state = normalizeState(data); 
+      save(); 
+      render();
+      setStatus('✅ Загружено из облака · ' + timeNow()); 
+      flash(btnLoad);
+    } else {
+      setStatus('⚠️ В облаке пока нет сохранений');
+    }
+  }catch(e){ 
+    console.error(e);
+    setStatus('⚠️ Нет сети или облако недоступно'); 
+  }
+}
+
+// Привязываем к кнопкам
+btnSave.addEventListener('click', saveToCloud);
+btnLoad.addEventListener('click', loadFromCloud);
 
 /* ================= СТАРТ ================= */
 render();
