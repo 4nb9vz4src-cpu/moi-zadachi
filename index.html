@@ -30,7 +30,7 @@ body{
   min-height:100vh; touch-action:manipulation;
   overflow-x:hidden; /* страница никогда не расширяется из-за свайпа */
 }
-.wrap{max-width:760px; margin:0 auto; padding:0 3px} /* минимальные поля — почти до краёв */
+.wrap{max-width:760px; margin:0 auto; padding:0 3px}
 .hidden{display:none!important}
 
 /* ----- Верхняя панель ----- */
@@ -42,8 +42,7 @@ body{
 .panel.collapsed .panel-inner{grid-template-rows:0fr}
 .pw{overflow:hidden; min-height:0}
 .panel-body{padding:16px 14px 20px}
-.row{display:flex; align-items:center; gap:10px}
-.font-row{margin-bottom:15px}
+.font-row{display:flex; align-items:center; gap:10px; margin-bottom:15px}
 .lbl{font-size:14px; color:var(--muted); width:48px; flex:none}
 .badge{min-width:28px; text-align:center; font-size:14px; font-weight:700; color:var(--accent);
   background:#eef0ff; border-radius:8px; padding:3px 7px}
@@ -88,7 +87,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 .tbtn-amber{background:var(--amber-bg)!important; border-color:#f2e3b3!important; color:var(--amber)!important}
 .tbtn-amber span{color:var(--amber)!important}
 
-/* --- Блок «Облако» — сворачиваемый, под задачами --- */
+/* --- Блок «Облако» — сворачиваемый --- */
 .cloud-box{
   margin-top:14px;
   border:1px solid #dbe3f8; background:#f8faff;
@@ -106,10 +105,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
   margin-left:auto; font-size:12px; color:var(--muted);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%;
 }
-.cloud-head .cchev{
-  color:var(--muted); font-size:12px; flex:none;
-  transition:transform .25s ease;
-}
+.cloud-head .cchev{color:var(--muted); font-size:12px; flex:none; transition:transform .25s ease}
 .cloud-box.open .cloud-head .cchev{transform:rotate(180deg)}
 .cloud-inner{display:grid; grid-template-rows:0fr; transition:grid-template-rows .25s ease}
 .cloud-box.open .cloud-inner{grid-template-rows:1fr}
@@ -125,7 +121,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
   text-align:center; opacity:0; transition:opacity .25s}
 .status.show{opacity:1}
 
-/* --- Ручка сворачивания --- */
+/* --- Ручка сворачивания панели --- */
 .handle{
   position:absolute; left:50%; transform:translateX(-50%); bottom:-11px;
   width:56px; height:22px; border-radius:999px; border:1px solid var(--line);
@@ -139,13 +135,15 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
 .swipe-wrap{
   position:relative; border-radius:14px; overflow:hidden; /* карточка обрезается по краю — масштаб не прыгает */
 }
+/* зона удаления полностью невидима, пока не начался свайп — никаких красных краёв */
 .del-zone{
   position:absolute; left:0; top:0; bottom:0; width:104px; z-index:0;
   border:none; background:var(--danger); color:#fff;
   font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
   display:flex; align-items:center; justify-content:center; gap:5px; padding:0 6px;
-  transition:background .2s;
+  transition:background .2s; opacity:0; visibility:hidden;
 }
+.swipe-wrap.reveal .del-zone{opacity:1; visibility:visible}
 .del-zone.confirm{background:var(--danger-dark)}
 .task{
   position:relative; z-index:1;
@@ -188,39 +186,39 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
   background:rgba(255,255,255,.65); border-left:3px solid #d8d4ea;
   border-radius:8px; padding:5px 9px; cursor:pointer; white-space:pre-wrap; word-break:break-word;
 }
-/* минимум 16px — иначе iPhone зумит страницу при фокусе (правило iOS) */
-.comment-edit{
-  margin:6px 0 2px calc(var(--fs)*1.7 + 8px); width:calc(100% - var(--fs)*1.7 - 8px);
-  font-family:inherit; font-size:16px; line-height:1.35;
-  border:1.5px solid var(--accent); border-radius:10px; padding:6px 9px;
-  resize:vertical; background:#fff; outline:none;
-}
 .empty{text-align:center; color:var(--muted); font-size:14px; padding:40px 20px; line-height:1.6}
 
-/* ----- Окно редактирования ----- */
+/* ----- Окно редактирования (задача и комментарий) ----- */
 .overlay{
   position:fixed; inset:0; z-index:50; background:rgba(38,36,58,.4);
   backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
   display:flex; align-items:flex-end; justify-content:center;
 }
 .sheet{
-  background:#fff; width:100%; max-width:560px; border-radius:20px 20px 0 0;
-  padding:18px 16px calc(env(safe-area-inset-bottom) + 16px);
+  background:#fff; width:100%; max-width:640px; border-radius:22px 22px 0 0;
+  padding:20px 18px calc(env(safe-area-inset-bottom) + 18px);
   box-shadow:0 -8px 40px rgba(0,0,0,.2); animation:up .25s ease;
 }
-@keyframes up{from{transform:translateY(30px); opacity:0}}
-@media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:20px}}
-.sheet-title{font-weight:700; margin-bottom:10px; font-size:15px}
+@keyframes up{from{transform:translateY(40px); opacity:0}}
+@media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:22px}}
+.sheet-title{font-weight:700; margin-bottom:10px; font-size:17px; text-align:center}
+/* контекст: к какой задаче пишем комментарий (мелкий серый текст) */
+.sheet-context{
+  font-size:13px; color:var(--muted); line-height:1.4;
+  background:#f7f6fb; border:1px solid var(--line); border-radius:10px;
+  padding:8px 11px; margin-bottom:12px;
+  max-height:76px; overflow:hidden; white-space:pre-wrap; word-break:break-word;
+}
 /* минимум 16px — иначе iPhone зумит страницу при фокусе */
 #sheetText{
-  width:100%; min-height:130px; font-family:inherit; font-size:16px; line-height:1.4;
-  border:1.5px solid var(--line); border-radius:12px; padding:10px 12px;
+  width:100%; min-height:40vh; font-family:inherit; font-size:17px; line-height:1.45;
+  border:1.5px solid var(--line); border-radius:14px; padding:14px 15px;
   resize:vertical; outline:none;
 }
 #sheetText:focus{border-color:var(--accent)}
-.sheet-btns{display:flex; gap:10px; margin-top:12px; justify-content:flex-end}
+.sheet-btns{display:flex; gap:10px; margin-top:14px; justify-content:flex-end}
 .sheet-btns button{
-  border-radius:12px; padding:10px 18px; font-size:15px; cursor:pointer;
+  border-radius:13px; padding:12px 22px; font-size:16px; cursor:pointer;
   border:1px solid var(--line); background:#f7f6fc; font-family:inherit;
 }
 #sheetOk{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
@@ -233,7 +231,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
   <!-- ===== Верхняя панель ===== -->
   <header class="panel" id="panel">
     <div class="panel-inner"><div class="pw"><div class="panel-body">
-      <div class="row font-row">
+      <div class="font-row">
         <span class="lbl">Шрифт</span>
         <input type="range" id="fontRange" min="1" max="10" step="1">
         <span class="badge" id="fontBadge">5</span>
@@ -276,11 +274,12 @@ input[type=range]{flex:1; accent-color:var(--accent); height:32px}
   <div class="empty hidden" id="empty">Пока пусто.<br>Нажми «Добавить задачу» вверху, чтобы создать первую.<br>Свайп задачи вправо — удаление.</div>
 </div>
 
-<!-- ===== Окно редактирования задачи ===== -->
+<!-- ===== Окно редактирования (задача или комментарий) ===== -->
 <div class="overlay hidden" id="overlay">
   <div class="sheet">
     <div class="sheet-title" id="sheetTitle">Задача</div>
-    <textarea id="sheetText" placeholder="Текст задачи…"></textarea>
+    <div class="sheet-context hidden" id="sheetContext"></div>
+    <textarea id="sheetText" placeholder="Текст…"></textarea>
     <div class="sheet-btns">
       <button id="sheetCancel">Отмена</button>
       <button id="sheetOk">Сохранить</button>
@@ -296,7 +295,7 @@ const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
 const LS_KEY     = 'moiZadachi.v1';                      // ключ локального хранилища
 const LAST_SAVE_KEY = 'moiZadachi.lastSave';             // дата последнего сохранения в облако
 const DRAFT_KEY  = 'moiZadachi.draft';                   // черновик редактирования
-const FONT_SIZES = [12,14,16,18,20,22,24,27,30,34];      // шкала 1..10 — от компактного до крупного
+const FONT_SIZES = [12,14,16,18,20,22,24,27,30,34];      // шкала 1..10
 const COLORS     = ['none','blue','green'];              // порядок переключения по кружку
 const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
 const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
@@ -336,17 +335,14 @@ function save(){
   catch(e){ setStatus('⚠️ Не удалось сохранить локально'); }
 }
 let state = loadState();
-let editingCommentId = null; // id задачи с открытым полем комментария
-let editingTaskId = null;    // id задачи в окне редактирования
-let openSwipe = null;        // {wrap, card, delBtn, timer} — открытая свайпом карточка
+let openSwipe = null;  // {wrap, card, delBtn, timer} — карточка с открытой кнопкой удаления
+let editor = null;     // {mode:'task'|'comment', id} — что сейчас редактируем в окне
 
-/* ================= ИСТОРИЯ ОТМЕНЫ (последние 10 действий) =================
-   Перед каждым изменением списка кладём «снимок» задач в стопку.
-   «Отменить» достаёт верхний снимок и восстанавливает его. */
+/* ================= ИСТОРИЯ ОТМЕНЫ (последние 10 действий) ================= */
 const history = [];
-function pushHistory(){
+function pushHistory(){ // снимок списка ПЕРЕД изменением
   history.push(JSON.stringify(state.tasks));
-  if(history.length > UNDO_LIMIT) history.shift(); // стопка не растёт бесконечно
+  if(history.length > UNDO_LIMIT) history.shift();
   updateUndoBtn();
 }
 function undo(){
@@ -354,7 +350,6 @@ function undo(){
   const snap = history.pop();
   try{ state.tasks = normalizeState({tasks: JSON.parse(snap)}).tasks; }
   catch(e){ setStatus('⚠️ Не удалось отменить'); return; }
-  editingCommentId = null;
   closeSwipe();
   save(); render();
   setStatus('Действие отменено'); flash(btnUndo);
@@ -370,8 +365,8 @@ const listEl=$('list'), emptyEl=$('empty'), panel=$('panel'),
   panelToggle=$('panelToggle'), statusEl=$('status'),
   cloudBox=$('cloudBox'), cloudToggle=$('cloudToggle'), cloudMeta=$('cloudMeta'),
   statsEl=$('stats'),
-  overlay=$('overlay'), sheetTitle=$('sheetTitle'), sheetText=$('sheetText'),
-  sheetOk=$('sheetOk'), sheetCancel=$('sheetCancel');
+  overlay=$('overlay'), sheetTitle=$('sheetTitle'), sheetContext=$('sheetContext'),
+  sheetText=$('sheetText'), sheetOk=$('sheetOk'), sheetCancel=$('sheetCancel');
 
 const findTask = id => state.tasks.find(t=>t.id===id);
 const timeNow = () => new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
@@ -415,7 +410,7 @@ function resetDelBtn(sw){
 function closeSwipe(){
   if(!openSwipe) return;
   const sw = openSwipe; openSwipe = null;
-  sw.wrap.classList.remove('open');
+  sw.wrap.classList.remove('open','reveal');
   sw.card.style.transform = '';
   resetDelBtn(sw);
 }
@@ -425,13 +420,12 @@ function attachSwipe(wrap, card, delBtn, task){
 
   function openCard(){
     closeSwipe();
-    wrap.classList.add('open');
+    wrap.classList.add('open','reveal');
     card.style.transform = 'translateX(' + ZONE_W + 'px)';
     openSwipe = { wrap, card, delBtn, timer:null };
   }
   card.addEventListener('pointerdown', e=>{
     if(e.pointerType==='mouse' && e.button!==0) return;
-    if(e.target.closest('.comment-edit')) return; // не мешаем полю комментария
     // тап по другой задаче закрывает открытую кнопку удаления; этот тап глушим
     if(openSwipe && openSwipe.wrap!==wrap){ closeSwipe(); suppressUntil = Date.now()+400; }
     sx=e.clientX; sy=e.clientY; dx=0; active=true; horiz=false;
@@ -444,6 +438,7 @@ function attachSwipe(wrap, card, delBtn, task){
         horiz=true;
         try{ card.setPointerCapture(e.pointerId); }catch(err){}
         card.classList.add('dragging');
+        wrap.classList.add('reveal'); // красная зона появляется только во время свайпа
       } else if(Math.abs(my)>10){ active=false; return; }
       else return;
     }
@@ -461,7 +456,7 @@ function attachSwipe(wrap, card, delBtn, task){
       suppressUntil = Date.now()+400;
       if(dx > OPEN_TH) openCard();
       else if(openSwipe && openSwipe.wrap===wrap) closeSwipe();
-      else { wrap.classList.remove('open'); card.style.transform=''; }
+      else { wrap.classList.remove('open','reveal'); card.style.transform=''; }
     }
     horiz=false; dx=0;
   }
@@ -483,10 +478,9 @@ function attachSwipe(wrap, card, delBtn, task){
       }
       return;
     }
-    pushHistory(); // снимок ПЕРЕД удалением — чтобы можно было отменить
+    pushHistory();
     openSwipe = null;
     state.tasks = state.tasks.filter(t=>t.id!==task.id);
-    if(editingCommentId===task.id) editingCommentId = null;
     save(); render();
     setStatus('Задача №' + task.num + ' удалена · ↩ можно отменить');
   });
@@ -499,7 +493,7 @@ function applyFont(){
 function renderTask(task){
   const wrap = document.createElement('div'); wrap.className = 'swipe-wrap';
 
-  // красная зона удаления (под карточкой, открывается свайпом вправо)
+  // красная зона удаления (скрыта до начала свайпа)
   const delBtn = document.createElement('button');
   delBtn.className = 'del-zone'; delBtn.type = 'button';
   delBtn.innerHTML = '<span>🗑</span> Удалить';
@@ -514,7 +508,7 @@ function renderTask(task){
   numBtn.className = 'num'; numBtn.textContent = task.num;
   numBtn.title = 'Статус: нажми, чтобы сменить';
   numBtn.addEventListener('click', ()=>{
-    pushHistory(); // снимок перед сменой цвета
+    pushHistory();
     const i = COLORS.indexOf(task.color);
     task.color = COLORS[(i+1) % COLORS.length];
     save(); render();
@@ -532,33 +526,23 @@ function renderTask(task){
     chip.textContent = task.color === 'green' ? '👑' : '⏳';
     body.appendChild(chip);
   }
-  body.addEventListener('click', ()=>openEditor(task.id));
+  body.addEventListener('click', ()=>openSheet('task', task.id));
 
   // плюсик комментария — виден, только когда комментария нет
   const plus = document.createElement('button');
   plus.className = 'cplus'; plus.textContent = '＋'; plus.title = 'Добавить комментарий';
   if(task.comment.trim() !== '') plus.classList.add('hidden');
-  plus.addEventListener('click', e=>{ e.stopPropagation(); startCommentEdit(task.id); });
+  plus.addEventListener('click', e=>{ e.stopPropagation(); openSheet('comment', task.id); });
 
   main.append(numBtn, body, plus);
   card.appendChild(main);
 
-  // комментарий: редактирование или просмотр
-  if(editingCommentId === task.id){
-    const ta = document.createElement('textarea');
-    ta.className = 'comment-edit'; ta.rows = 2;
-    ta.placeholder = 'Как выполнено / заметка…'; ta.value = task.comment;
-    ta.addEventListener('keydown', e=>{
-      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); ta.blur(); }
-    });
-    ta.addEventListener('blur', ()=>finishCommentEdit(task.id, ta.value));
-    card.appendChild(ta);
-    requestAnimationFrame(()=>ta.focus());
-  } else if(task.comment.trim() !== '' && !state.commentsCollapsed){
+  // комментарий под задачей — нажатие открывает окно редактирования
+  if(task.comment.trim() !== '' && !state.commentsCollapsed){
     const c = document.createElement('div');
     c.className = 'comment'; c.textContent = task.comment;
     c.title = 'Нажми, чтобы изменить';
-    c.addEventListener('click', ()=>startCommentEdit(task.id));
+    c.addEventListener('click', e=>{ e.stopPropagation(); openSheet('comment', task.id); });
     card.appendChild(c);
   }
 
@@ -581,65 +565,71 @@ function render(){
   emptyEl.classList.toggle('hidden', state.tasks.length > 0);
 }
 
-/* ================= ЗАДАЧИ: ДОБАВИТЬ ================= */
+/* ================= ЗАДАЧИ: ДОБАВИТЬ / ОТМЕНИТЬ ================= */
 btnAdd.addEventListener('click', ()=>{
   closeSwipe();
-  pushHistory(); // добавление тоже можно отменить
+  pushHistory();
   const maxNum = state.tasks.reduce((m,t)=>Math.max(m,t.num), 0);
   const task = { id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
                  num:maxNum+1, text:'', color:'none', comment:'' };
   state.tasks.push(task); save(); render(); flash(btnAdd);
-  openEditor(task.id); // сразу открываем окно, чтобы написать текст
+  openSheet('task', task.id); // сразу открываем окно, чтобы написать текст
 });
 btnUndo.addEventListener('click', undo);
 
-/* ================= КОММЕНТАРИИ ================= */
-function startCommentEdit(id){ editingCommentId = id; render(); }
-function finishCommentEdit(id, value){
-  if(editingCommentId !== id) return; // защита от двойного blur
-  editingCommentId = null;
-  const t = findTask(id);
-  if(t){
-    const v = value.trim();
-    if(v !== t.comment){ pushHistory(); t.comment = v; save(); } // снимок только при реальном изменении
-  }
-  render();
-}
+/* ================= КНОПКА КОММЕНТАРИЕВ ================= */
 btnComments.addEventListener('click', ()=>{
   state.commentsCollapsed = !state.commentsCollapsed;
   save(); render(); flash(btnComments);
   setStatus(state.commentsCollapsed ? 'Комментарии свёрнуты' : 'Комментарии развёрнуты');
 });
 
-/* ================= ОКНО РЕДАКТИРОВАНИЯ ================= */
-function openEditor(id){
+/* ================= ОКНО РЕДАКТИРОВАНИЯ (задача / комментарий) ================= */
+function openSheet(mode, id){
   const t = findTask(id); if(!t) return;
-  editingTaskId = id;
-  sheetTitle.textContent = 'Задача №' + t.num;
-  let val = t.text;
-  try{ // восстанавливаем черновик, если приложение закрыли посреди редактирования
-    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-    if(d && d.id === id) val = d.text;
-  }catch(e){}
-  sheetText.value = val;
+  editor = { mode, id };
+  const isComment = mode === 'comment';
+  sheetTitle.textContent = isComment ? 'Комментарий к задаче №' + t.num : 'Задача №' + t.num;
+  // контекст задачи — мелкий серый текст, только в режиме комментария
+  if(isComment && t.text){
+    sheetContext.textContent = t.text;
+    sheetContext.classList.remove('hidden');
+  } else {
+    sheetContext.classList.add('hidden');
+  }
+  sheetText.placeholder = isComment ? 'Как выполнено / заметка…' : 'Текст задачи…';
+  sheetText.value = isComment ? t.comment : t.text;
   overlay.classList.remove('hidden');
   setTimeout(()=>sheetText.focus(), 60);
 }
-function closeEditor(){ overlay.classList.add('hidden'); editingTaskId = null; }
-sheetText.addEventListener('input', ()=>{
-  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({id:editingTaskId, text:sheetText.value})); }catch(e){}
+function closeSheet(){
+  localStorage.removeItem(DRAFT_KEY);
+  overlay.classList.add('hidden'); editor = null;
+}
+sheetText.addEventListener('input', ()=>{ // черновик — если приложение закрыли посреди ввода
+  if(!editor) return;
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({mode:editor.mode, id:editor.id, text:sheetText.value})); }catch(e){}
 });
 sheetOk.addEventListener('click', ()=>{
-  const t = findTask(editingTaskId);
+  if(!editor) return;
+  const t = findTask(editor.id);
   if(t){
     const v = sheetText.value.trim();
-    if(v !== t.text){ pushHistory(); t.text = v; save(); } // снимок только при реальном изменении
+    const field = editor.mode === 'comment' ? 'comment' : 'text';
+    if(v !== t[field]){ pushHistory(); t[field] = v; save(); }
   }
-  localStorage.removeItem(DRAFT_KEY);
-  closeEditor(); render();
+  closeSheet(); render();
 });
-sheetCancel.addEventListener('click', closeEditor); // черновик остаётся
-overlay.addEventListener('click', e=>{ if(e.target===overlay) closeEditor(); });
+sheetCancel.addEventListener('click', closeSheet); // черновик стираем — пользователь отменил сам
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeSheet(); });
+
+// восстановление черновика при загрузке страницы (если приложение закрыли посреди ввода)
+(function restoreDraft(){
+  try{
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+    if(d && findTask(d.id)) openSheet(d.mode === 'comment' ? 'comment' : 'task', d.id), sheetText.value = d.text;
+  }catch(e){}
+})();
 
 /* ================= ШРИФТ / ПАНЕЛЬ / ОБЛАКО-СЕКЦИЯ ================= */
 fontRange.value = state.fontSize; fontBadge.textContent = state.fontSize;
@@ -680,7 +670,7 @@ async function loadFromCloud(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const lines = (await res.text()).trim().split('\n').filter(Boolean);
 
-    let data = null; // объявлена ДО цикла — видна и после него
+    let data = null;
 
     // Ищем последнее сохранение (пролистываем с конца)
     for(let i = lines.length - 1; i >= 0; i--){
