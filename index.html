@@ -28,30 +28,27 @@ body{
   padding-top:env(safe-area-inset-top);
   padding-bottom:calc(env(safe-area-inset-bottom) + 30px);
   min-height:100vh; touch-action:manipulation;
-  overflow-x:hidden;
+  overflow-x:hidden; /* страница никогда не расширяется из-за свайпа */
 }
-.wrap{max-width:680px; margin:0 auto; padding:0 12px}
+.wrap{max-width:720px; margin:0 auto; padding:0 6px} /* узкие поля — страница шире */
 .hidden{display:none!important}
 
 /* ----- Верхняя панель ----- */
 .panel{
-  margin-top:10px; background:var(--card); border:1px solid var(--line);
+  margin-top:8px; background:var(--card); border:1px solid var(--line);
   border-radius:18px; box-shadow:0 6px 18px rgba(50,45,90,.07); position:relative;
 }
 .panel-inner{display:grid; grid-template-rows:1fr; transition:grid-template-rows .28s ease}
 .panel.collapsed .panel-inner{grid-template-rows:0fr}
 .pw{overflow:hidden; min-height:0}
-.panel-body{padding:14px 14px 18px}
+.panel-body{padding:13px 12px 18px}
 .row{display:flex; align-items:center; gap:10px}
-.font-row{margin-bottom:14px}
+.font-row{margin-bottom:13px}
 .lbl{font-size:13px; color:var(--muted); width:44px; flex:none}
 .badge{min-width:26px; text-align:center; font-size:13px; font-weight:700; color:var(--accent);
   background:#eef0ff; border-radius:8px; padding:2px 6px}
 input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 
-/* --- Две колонки: слева задачи, справа облако --- */
-.groups{display:flex; gap:12px; align-items:stretch; flex-wrap:wrap}
-.g-main{flex:1.3; min-width:230px}
 .glabel{font-size:11px; text-transform:uppercase; letter-spacing:.06em;
   color:var(--muted); margin:0 2px 6px; font-weight:600}
 .grow{display:flex; gap:8px; flex-wrap:wrap}
@@ -83,7 +80,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 .tbtn-primary:active{transform:scale(.95); box-shadow:0 1px 3px rgba(47,158,87,.3)}
 .tbtn-primary.done{background:#24824a}
 
-/* Второстепенные кнопки */
+/* Второстепенные кнопки — рядом ниже */
 .grow.secondary{margin-top:8px}
 .grow.secondary .tbtn{height:32px; padding:0 10px; font-size:12px; font-weight:600; color:var(--muted); background:#f7f6fb}
 .grow.secondary .tbtn span{font-size:13px; color:var(--muted)}
@@ -91,16 +88,33 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 .tbtn-amber{background:var(--amber-bg)!important; border-color:#f2e3b3!important; color:var(--amber)!important}
 .tbtn-amber span{color:var(--amber)!important}
 
-/* --- Блок «Облако» справа --- */
+/* --- Блок «Облако» — сворачиваемый, под задачами --- */
 .cloud-box{
-  flex:1; min-width:215px;
+  margin-top:12px;
   border:1px solid #dbe3f8; background:#f8faff;
-  border-radius:14px; padding:11px 12px 10px;
+  border-radius:14px; overflow:hidden;
 }
-.cloud-meta{
-  margin-top:10px; font-size:11px; color:var(--muted); text-align:center;
-  border-top:1px solid #e4e9f7; padding-top:7px; line-height:1.4;
+.cloud-head{
+  display:flex; align-items:center; gap:8px; width:100%;
+  padding:10px 12px; border:none; background:none; cursor:pointer;
+  font-family:inherit; text-align:left;
 }
+.cloud-head:active{background:rgba(99,102,241,.05)}
+.cloud-head .cicon{font-size:15px}
+.cloud-head .ctitle{font-size:13px; font-weight:700; color:var(--ink)}
+.cloud-head .cmeta{
+  margin-left:auto; font-size:11px; color:var(--muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%;
+}
+.cloud-head .cchev{
+  color:var(--muted); font-size:11px; flex:none;
+  transition:transform .25s ease;
+}
+.cloud-box.open .cloud-head .cchev{transform:rotate(180deg)}
+.cloud-inner{display:grid; grid-template-rows:0fr; transition:grid-template-rows .25s ease}
+.cloud-box.open .cloud-inner{grid-template-rows:1fr}
+.cloud-pw{overflow:hidden; min-height:0}
+.cloud-body{padding:2px 12px 12px}
 
 /* --- Статистика и статус --- */
 .stats{
@@ -121,9 +135,9 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 .handle:active{transform:translateX(-50%) scale(.92)}
 
 /* ----- Список задач + свайп ----- */
-.list{margin-top:22px; display:flex; flex-direction:column; gap:8px}
+.list{margin-top:20px; display:flex; flex-direction:column; gap:8px}
 .swipe-wrap{
-  position:relative; border-radius:14px; overflow:hidden;
+  position:relative; border-radius:14px; overflow:hidden; /* карточка обрезается по краю — масштаб не прыгает */
 }
 .del-zone{
   position:absolute; left:0; top:0; bottom:0; width:104px; z-index:0;
@@ -174,7 +188,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
   background:rgba(255,255,255,.65); border-left:3px solid #d8d4ea;
   border-radius:8px; padding:5px 9px; cursor:pointer; white-space:pre-wrap; word-break:break-word;
 }
-/* ВАЖНО: шрифт >= 16px, иначе iPhone зумит страницу при фокусе */
+/* минимум 16px — иначе iPhone зумит страницу при фокусе (правило iOS) */
 .comment-edit{
   margin:6px 0 2px calc(var(--fs)*1.7 + 8px); width:calc(100% - var(--fs)*1.7 - 8px);
   font-family:inherit; font-size:16px; line-height:1.35;
@@ -197,7 +211,7 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 @keyframes up{from{transform:translateY(30px); opacity:0}}
 @media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:20px}}
 .sheet-title{font-weight:700; margin-bottom:10px; font-size:15px}
-/* ВАЖНО: шрифт >= 16px, иначе iPhone зумит страницу при фокусе */
+/* минимум 16px — иначе iPhone зумит страницу при фокусе */
 #sheetText{
   width:100%; min-height:130px; font-family:inherit; font-size:16px; line-height:1.4;
   border:1.5px solid var(--line); border-radius:12px; padding:10px 12px;
@@ -224,30 +238,31 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
         <input type="range" id="fontRange" min="1" max="10" step="1">
         <span class="badge" id="fontBadge">5</span>
       </div>
-      <div class="groups">
 
-        <!-- Левая колонка: задачи -->
-        <div class="g-main">
-          <div class="glabel">Задачи</div>
-          <div class="grow">
-            <button class="tbtn-primary" id="btnAdd"><span>＋</span>Добавить задачу</button>
-          </div>
-          <div class="grow secondary">
-            <button class="tbtn tbtn-amber" id="btnComments"><span>💬</span>Комментарии</button>
-            <button class="tbtn" id="btnUndo" disabled><span>↩</span>Отменить</button>
-          </div>
-        </div>
+      <!-- Блок: задачи -->
+      <div class="glabel">Задачи</div>
+      <div class="grow">
+        <button class="tbtn-primary" id="btnAdd"><span>＋</span>Добавить задачу</button>
+      </div>
+      <div class="grow secondary">
+        <button class="tbtn tbtn-amber" id="btnComments"><span>💬</span>Комментарии</button>
+        <button class="tbtn" id="btnUndo" disabled><span>↩</span>Отменить</button>
+      </div>
 
-        <!-- Правая колонка: облако -->
-        <div class="cloud-box">
-          <div class="glabel">Облако</div>
+      <!-- Блок: облако (сворачиваемый) -->
+      <div class="cloud-box" id="cloudBox">
+        <button class="cloud-head" id="cloudToggle">
+          <span class="cicon">☁️</span>
+          <span class="ctitle">Облако</span>
+          <span class="cmeta" id="cloudMeta">Сохранений ещё не было</span>
+          <span class="cchev">▾</span>
+        </button>
+        <div class="cloud-inner"><div class="cloud-pw"><div class="cloud-body">
           <div class="grow">
             <button class="tbtn" id="btnSave"><span>☁️</span>Сохранить</button>
             <button class="tbtn" id="btnLoad"><span>📥</span>Загрузить</button>
           </div>
-          <div class="cloud-meta" id="cloudMeta">Сохранений ещё не было</div>
-        </div>
-
+        </div></div></div>
       </div>
 
       <div class="stats" id="stats">Всего: 0 · В процессе: 0 · Выполнено: 0</div>
@@ -276,24 +291,24 @@ input[type=range]{flex:1; accent-color:var(--accent); height:28px}
 <script>
 'use strict';
 /* ================= CONFIG ================= */
-const NTFY_TOPIC = 'zadachi-sync-x7q2m9v4k1p8';
+const NTFY_TOPIC = 'zadachi-sync-x7q2m9v4k1p8';          // твой секретный адрес в облаке
 const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
-const LS_KEY     = 'moiZadachi.v1';
-const LAST_SAVE_KEY = 'moiZadachi.lastSave';
-const DRAFT_KEY  = 'moiZadachi.draft';
-const FONT_SIZES = [11.5,12.5,13.5,14.5,15.5,16.5,17.5,19,20.5,22];
-const COLORS     = ['none','blue','green'];
-const ZONE_W     = 104;
-const OPEN_TH    = 55;
-const UNDO_LIMIT = 10;
-const SEED_TASKS = [];
+const LS_KEY     = 'moiZadachi.v1';                      // ключ локального хранилища
+const LAST_SAVE_KEY = 'moiZadachi.lastSave';             // дата последнего сохранения в облако
+const DRAFT_KEY  = 'moiZadachi.draft';                   // черновик редактирования
+const FONT_SIZES = [11,12.5,14,15.5,17,18.5,20,22,24,26]; // шкала 1..10 — шаг заметнее
+const COLORS     = ['none','blue','green'];              // порядок переключения по кружку
+const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
+const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
+const UNDO_LIMIT = 10;                                   // сколько шагов отмены хранить
+const SEED_TASKS = []; // стартовый список пуст — чистый лист
 
 /* ================= STATE / STORAGE ================= */
 function defaultState(){
-  return { v:1, fontSize:5, commentsCollapsed:false, panelCollapsed:false,
+  return { v:1, fontSize:5, commentsCollapsed:false, panelCollapsed:false, cloudCollapsed:true,
     tasks: SEED_TASKS.map((t,i)=>({ id:'seed'+i, num:i+1, text:t, color:'none', comment:'' })) };
 }
-function normalizeState(s){
+function normalizeState(s){ // защита от битых данных: приводим всё к валидному виду
   const d = defaultState();
   if(!s || !Array.isArray(s.tasks)) return d;
   d.tasks = s.tasks.filter(t=>t && typeof t==='object').map((t,i)=>({
@@ -306,6 +321,7 @@ function normalizeState(s){
   d.fontSize = Math.min(10, Math.max(1, (s.fontSize|0) || 5));
   d.commentsCollapsed = !!s.commentsCollapsed;
   d.panelCollapsed = !!s.panelCollapsed;
+  d.cloudCollapsed = s.cloudCollapsed !== false; // по умолчанию свёрнуто
   return d;
 }
 function loadState(){
@@ -320,15 +336,17 @@ function save(){
   catch(e){ setStatus('⚠️ Не удалось сохранить локально'); }
 }
 let state = loadState();
-let editingCommentId = null;
-let editingTaskId = null;
-let openSwipe = null;
+let editingCommentId = null; // id задачи с открытым полем комментария
+let editingTaskId = null;    // id задачи в окне редактирования
+let openSwipe = null;        // {wrap, card, delBtn, timer} — открытая свайпом карточка
 
-/* ================= ИСТОРИЯ ОТМЕНЫ ================= */
+/* ================= ИСТОРИЯ ОТМЕНЫ (последние 10 действий) =================
+   Перед каждым изменением списка кладём «снимок» задач в стопку.
+   «Отменить» достаёт верхний снимок и восстанавливает его. */
 const history = [];
 function pushHistory(){
   history.push(JSON.stringify(state.tasks));
-  if(history.length > UNDO_LIMIT) history.shift();
+  if(history.length > UNDO_LIMIT) history.shift(); // стопка не растёт бесконечно
   updateUndoBtn();
 }
 function undo(){
@@ -350,7 +368,8 @@ const listEl=$('list'), emptyEl=$('empty'), panel=$('panel'),
   btnAdd=$('btnAdd'), btnComments=$('btnComments'), btnUndo=$('btnUndo'),
   btnSave=$('btnSave'), btnLoad=$('btnLoad'),
   panelToggle=$('panelToggle'), statusEl=$('status'),
-  cloudMeta=$('cloudMeta'), statsEl=$('stats'),
+  cloudBox=$('cloudBox'), cloudToggle=$('cloudToggle'), cloudMeta=$('cloudMeta'),
+  statsEl=$('stats'),
   overlay=$('overlay'), sheetTitle=$('sheetTitle'), sheetText=$('sheetText'),
   sheetOk=$('sheetOk'), sheetCancel=$('sheetCancel');
 
@@ -380,7 +399,7 @@ function updateCloudMeta(){
   const last = localStorage.getItem(LAST_SAVE_KEY);
   if(last){
     const d = new Date(last);
-    cloudMeta.textContent = 'Сохранено: ' + d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})
+    cloudMeta.textContent = d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})
       + ' в ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
   } else {
     cloudMeta.textContent = 'Сохранений ещё не было';
@@ -402,7 +421,7 @@ function closeSwipe(){
 }
 function attachSwipe(wrap, card, delBtn, task){
   let sx=0, sy=0, dx=0, active=false, horiz=false;
-  let suppressUntil = 0;
+  let suppressUntil = 0; // клики глушим по таймеру — обычные нажатия никогда не «съедаются»
 
   function openCard(){
     closeSwipe();
@@ -412,7 +431,8 @@ function attachSwipe(wrap, card, delBtn, task){
   }
   card.addEventListener('pointerdown', e=>{
     if(e.pointerType==='mouse' && e.button!==0) return;
-    if(e.target.closest('.comment-edit')) return;
+    if(e.target.closest('.comment-edit')) return; // не мешаем полю комментария
+    // тап по другой задаче закрывает открытую кнопку удаления; этот тап глушим
     if(openSwipe && openSwipe.wrap!==wrap){ closeSwipe(); suppressUntil = Date.now()+400; }
     sx=e.clientX; sy=e.clientY; dx=0; active=true; horiz=false;
   });
@@ -429,7 +449,7 @@ function attachSwipe(wrap, card, delBtn, task){
     }
     const base = wrap.classList.contains('open') ? ZONE_W : 0;
     dx = Math.max(0, base + mx);
-    if(dx > ZONE_W) dx = ZONE_W + (dx-ZONE_W)*0.3;
+    if(dx > ZONE_W) dx = ZONE_W + (dx-ZONE_W)*0.3; // резиновый эффект
     card.style.transform = 'translateX(' + dx + 'px)';
     e.preventDefault();
   });
@@ -447,11 +467,13 @@ function attachSwipe(wrap, card, delBtn, task){
   }
   card.addEventListener('pointerup', endSwipe);
   card.addEventListener('pointercancel', endSwipe);
+  // глушим только клик, идущий сразу за жестом; тап по открытой карточке — закрывает её
   card.addEventListener('click', e=>{
     if(Date.now() < suppressUntil){ e.stopPropagation(); e.preventDefault(); return; }
     if(wrap.classList.contains('open')){ closeSwipe(); e.stopPropagation(); e.preventDefault(); }
   }, true);
 
+  // двухшаговое удаление: «🗑 Удалить» → «Точно?» → удалено
   delBtn.addEventListener('click', ()=>{
     if(!delBtn.classList.contains('confirm')){
       delBtn.classList.add('confirm');
@@ -461,7 +483,7 @@ function attachSwipe(wrap, card, delBtn, task){
       }
       return;
     }
-    pushHistory();
+    pushHistory(); // снимок ПЕРЕД удалением — чтобы можно было отменить
     openSwipe = null;
     state.tasks = state.tasks.filter(t=>t.id!==task.id);
     if(editingCommentId===task.id) editingCommentId = null;
@@ -477,6 +499,7 @@ function applyFont(){
 function renderTask(task){
   const wrap = document.createElement('div'); wrap.className = 'swipe-wrap';
 
+  // красная зона удаления (под карточкой, открывается свайпом вправо)
   const delBtn = document.createElement('button');
   delBtn.className = 'del-zone'; delBtn.type = 'button';
   delBtn.innerHTML = '<span>🗑</span> Удалить';
@@ -486,29 +509,32 @@ function renderTask(task){
 
   const main = document.createElement('div'); main.className = 'task-main';
 
+  // кружок с фиксированным номером — переключает цвет по кругу
   const numBtn = document.createElement('button');
   numBtn.className = 'num'; numBtn.textContent = task.num;
   numBtn.title = 'Статус: нажми, чтобы сменить';
   numBtn.addEventListener('click', ()=>{
-    pushHistory();
+    pushHistory(); // снимок перед сменой цвета
     const i = COLORS.indexOf(task.color);
     task.color = COLORS[(i+1) % COLORS.length];
     save(); render();
   });
 
+  // текст задачи — нажатие открывает окно редактирования
   const body = document.createElement('div');
   body.className = 'task-body'; body.title = 'Нажми, чтобы редактировать';
   const span = document.createElement('span'); span.className = 'task-text';
   if(task.text){ span.textContent = task.text; }
   else { span.textContent = '— пусто, нажми, чтобы написать —'; span.classList.add('placeholder'); }
   body.appendChild(span);
-  if(task.color !== 'none'){
+  if(task.color !== 'none'){ // чип-индикатор на белой подложке
     const chip = document.createElement('span'); chip.className = 'chip';
     chip.textContent = task.color === 'green' ? '👑' : '⏳';
     body.appendChild(chip);
   }
   body.addEventListener('click', ()=>openEditor(task.id));
 
+  // плюсик комментария — виден, только когда комментария нет
   const plus = document.createElement('button');
   plus.className = 'cplus'; plus.textContent = '＋'; plus.title = 'Добавить комментарий';
   if(task.comment.trim() !== '') plus.classList.add('hidden');
@@ -517,6 +543,7 @@ function renderTask(task){
   main.append(numBtn, body, plus);
   card.appendChild(main);
 
+  // комментарий: редактирование или просмотр
   if(editingCommentId === task.id){
     const ta = document.createElement('textarea');
     ta.className = 'comment-edit'; ta.rows = 2;
@@ -547,6 +574,7 @@ function render(){
   updateCloudMeta();
   panel.classList.toggle('collapsed', state.panelCollapsed);
   panelToggle.textContent = state.panelCollapsed ? '▴' : '▾';
+  cloudBox.classList.toggle('open', !state.cloudCollapsed);
   btnComments.classList.toggle('off', state.commentsCollapsed);
   listEl.innerHTML = '';
   state.tasks.forEach(t => listEl.appendChild(renderTask(t)));
@@ -556,24 +584,24 @@ function render(){
 /* ================= ЗАДАЧИ: ДОБАВИТЬ ================= */
 btnAdd.addEventListener('click', ()=>{
   closeSwipe();
-  pushHistory();
+  pushHistory(); // добавление тоже можно отменить
   const maxNum = state.tasks.reduce((m,t)=>Math.max(m,t.num), 0);
   const task = { id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
                  num:maxNum+1, text:'', color:'none', comment:'' };
   state.tasks.push(task); save(); render(); flash(btnAdd);
-  openEditor(task.id);
+  openEditor(task.id); // сразу открываем окно, чтобы написать текст
 });
 btnUndo.addEventListener('click', undo);
 
 /* ================= КОММЕНТАРИИ ================= */
 function startCommentEdit(id){ editingCommentId = id; render(); }
 function finishCommentEdit(id, value){
-  if(editingCommentId !== id) return;
+  if(editingCommentId !== id) return; // защита от двойного blur
   editingCommentId = null;
   const t = findTask(id);
   if(t){
     const v = value.trim();
-    if(v !== t.comment){ pushHistory(); t.comment = v; save(); }
+    if(v !== t.comment){ pushHistory(); t.comment = v; save(); } // снимок только при реальном изменении
   }
   render();
 }
@@ -589,7 +617,7 @@ function openEditor(id){
   editingTaskId = id;
   sheetTitle.textContent = 'Задача №' + t.num;
   let val = t.text;
-  try{
+  try{ // восстанавливаем черновик, если приложение закрыли посреди редактирования
     const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
     if(d && d.id === id) val = d.text;
   }catch(e){}
@@ -605,15 +633,15 @@ sheetOk.addEventListener('click', ()=>{
   const t = findTask(editingTaskId);
   if(t){
     const v = sheetText.value.trim();
-    if(v !== t.text){ pushHistory(); t.text = v; save(); }
+    if(v !== t.text){ pushHistory(); t.text = v; save(); } // снимок только при реальном изменении
   }
   localStorage.removeItem(DRAFT_KEY);
   closeEditor(); render();
 });
-sheetCancel.addEventListener('click', closeEditor);
+sheetCancel.addEventListener('click', closeEditor); // черновик остаётся
 overlay.addEventListener('click', e=>{ if(e.target===overlay) closeEditor(); });
 
-/* ================= ШРИФТ / ПАНЕЛЬ ================= */
+/* ================= ШРИФТ / ПАНЕЛЬ / ОБЛАКО-СЕКЦИЯ ================= */
 fontRange.value = state.fontSize; fontBadge.textContent = state.fontSize;
 fontRange.addEventListener('input', ()=>{
   state.fontSize = +fontRange.value;
@@ -624,8 +652,12 @@ panelToggle.addEventListener('click', ()=>{
   state.panelCollapsed = !state.panelCollapsed;
   save(); render();
 });
+cloudToggle.addEventListener('click', ()=>{
+  state.cloudCollapsed = !state.cloudCollapsed;
+  save(); render();
+});
 
-/* ================= ОБЛАКО ================= */
+/* ================= ОБЛАКО (ntfy) — с поддержкой вложений ================= */
 async function saveToCloud(){
   setStatus('Сохраняю в облако…');
   try{
@@ -648,13 +680,15 @@ async function loadFromCloud(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const lines = (await res.text()).trim().split('\n').filter(Boolean);
 
-    let data = null;
+    let data = null; // объявлена ДО цикла — видна и после него
 
+    // Ищем последнее сохранение (пролистываем с конца)
     for(let i = lines.length - 1; i >= 0; i--){
       let evt;
       try{ evt = JSON.parse(lines[i]); }catch(e){ continue; }
       if(evt.event !== 'message') continue;
 
+      // Вариант 1: данные прямо в сообщении (маленький объём)
       if(evt.message){
         try{
           const d = JSON.parse(evt.message);
@@ -662,6 +696,7 @@ async function loadFromCloud(){
         }catch(e){}
       }
 
+      // Вариант 2: данные во вложении (большой объём — твой случай)
       if(evt.attachment && evt.attachment.url){
         try{
           setStatus('Скачиваю вложение…');
@@ -675,7 +710,7 @@ async function loadFromCloud(){
     }
 
     if(data){
-      pushHistory();
+      pushHistory(); // снимок перед заменой — можно отменить
       state = normalizeState(data);
       save();
       render();
