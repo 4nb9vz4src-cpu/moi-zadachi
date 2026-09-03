@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Мои задачи</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f5fb">
+<link rel="apple-touch-icon" href="iconn.png">
+<link rel="icon" href="iconn.png">
+<style>
+/* ================= СТИЛИ ================= */
+:root{
+  --fs:15px;
+  --bg:#f6f5fb; --card:#ffffff; --ink:#26243a; --muted:#7a7690; --line:#e9e7f2;
+  --green:#2f9e57; --green-bg:#eaf7ef; --green-line:#cdeed9;
+  --blue:#2b7cd3;  --blue-bg:#eaf3fd;  --blue-line:#cfe4f9;
+  --accent:#6366f1; --danger:#e5484d; --danger-dark:#c62f34;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:calc(env(safe-area-inset-bottom) + 30px);
+  min-height:100vh; touch-action:manipulation;
+}
+.wrap{max-width:680px; margin:0 auto; padding:0 12px}
+.hidden{display:none!important}
+
+/* ----- Верхняя панель ----- */
+.panel{
+  margin-top:10px; background:var(--card); border:1px solid var(--line);
+  border-radius:18px; box-shadow:0 6px 18px rgba(50,45,90,.07); position:relative;
+}
+.panel-inner{display:grid; grid-template-rows:1fr; transition:grid-template-rows .28s ease}
+.panel.collapsed .panel-inner{grid-template-rows:0fr}
+.pw{overflow:hidden; min-height:0}
+.panel-body{padding:12px 14px 18px}
+.row{display:flex; align-items:center; gap:10px}
+.font-row{margin-bottom:14px}
+.lbl{font-size:13px; color:var(--muted); width:44px; flex:none}
+.badge{min-width:26px; text-align:center; font-size:13px; font-weight:700; color:var(--accent);
+  background:#eef0ff; border-radius:8px; padding:2px 6px}
+input[type=range]{flex:1; accent-color:var(--accent); height:28px}
+
+/* секции кнопок */
+.groups{display:flex; gap:14px; flex-wrap:wrap}
+.group{flex:1; min-width:150px}
+.glabel{font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--muted); margin:0 2px 6px}
+.grow{display:flex; gap:8px; flex-wrap:wrap}
+.tbtn{
+  display:flex; align-items:center; gap:6px;
+  border:1px solid var(--line); background:#fbfaff; border-radius:12px;
+  height:40px; padding:0 13px; font-size:13.5px; font-weight:600; color:var(--ink);
+  cursor:pointer; font-family:inherit;
+  transition:transform .15s, background .3s, border-color .3s, opacity .2s;
+}
+.tbtn span{font-size:15px}
+.tbtn:active{transform:scale(.93)}
+.tbtn.done{background:var(--green-bg); border-color:var(--green); transform:scale(1.05)}
+.tbtn.off{opacity:.45}
+.tbtn:disabled{opacity:.35; pointer-events:none}
+.status{margin-top:10px; font-size:12px; color:var(--muted); min-height:16px;
+  text-align:center; opacity:0; transition:opacity .25s}
+.status.show{opacity:1}
+.handle{
+  position:absolute; left:50%; transform:translateX(-50%); bottom:-11px;
+  width:56px; height:22px; border-radius:999px; border:1px solid var(--line);
+  background:var(--card); color:var(--muted); font-size:12px; cursor:pointer;
+  box-shadow:0 3px 8px rgba(50,45,90,.08);
+}
+.handle:active{transform:translateX(-50%) scale(.92)}
+
+/* ----- Список задач + свайп ----- */
+.list{margin-top:22px; display:flex; flex-direction:column; gap:8px}
+.swipe-wrap{position:relative}
+.del-zone{
+  position:absolute; left:0; top:0; bottom:0; width:104px; z-index:0;
+  border:none; border-radius:14px 0 0 14px; background:var(--danger); color:#fff;
+  font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:5px; padding:0 6px;
+  transition:background .2s;
+}
+.del-zone.confirm{background:var(--danger-dark)}
+.task{
+  position:relative; z-index:1;
+  background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:8px 10px; box-shadow:0 2px 8px rgba(50,45,90,.05);
+  font-size:var(--fs); line-height:1.35;
+  transition:background .25s, border-color .25s, transform .18s ease;
+  touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+}
+.task.dragging{transition:background .25s, border-color .25s}
+.task.color-green{background:var(--green-bg); border-color:var(--green-line)}
+.task.color-blue{background:var(--blue-bg); border-color:var(--blue-line)}
+.task-main{display:flex; align-items:flex-start; gap:8px}
+.num{
+  flex:none; width:calc(var(--fs)*1.7); height:calc(var(--fs)*1.7); margin-top:1px;
+  border-radius:50%; border:1.5px solid #cfcbe0; background:#fff; color:#6d6885;
+  font-size:calc(var(--fs)*0.72); font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.num:active{transform:scale(.85)}
+.color-green .num{background:var(--green); border-color:var(--green); color:#fff}
+.color-blue .num{background:var(--blue); border-color:var(--blue); color:#fff}
+.task-body{flex:1; min-width:0; cursor:pointer; word-break:break-word; white-space:pre-wrap}
+.task-text.placeholder{color:#b3aec6; font-style:italic; font-size:calc(var(--fs)*0.85)}
+.chip{
+  display:inline-flex; align-items:center; margin-left:8px; padding:0 8px;
+  background:#fff; border:1px solid var(--line); border-radius:999px;
+  font-size:calc(var(--fs)*0.85); line-height:1.5; vertical-align:middle;
+  box-shadow:0 1px 3px rgba(50,45,90,.08);
+}
+.cplus{
+  flex:none; width:calc(var(--fs)*1.5); height:calc(var(--fs)*1.5); margin-top:1px;
+  border-radius:50%; border:1.5px dashed #c9c4dd; background:transparent; color:#a49dc2;
+  font-size:calc(var(--fs)*0.8); cursor:pointer; transition:transform .15s;
+}
+.cplus:active{transform:scale(.85)}
+.comment{
+  margin:6px 0 2px calc(var(--fs)*1.7 + 8px);
+  font-size:calc(var(--fs)*0.82); color:var(--muted); line-height:1.35;
+  background:rgba(255,255,255,.65); border-left:3px solid #d8d4ea;
+  border-radius:8px; padding:5px 9px; cursor:pointer; white-space:pre-wrap; word-break:break-word;
+}
+.comment-edit{
+  margin:6px 0 2px calc(var(--fs)*1.7 + 8px); width:calc(100% - var(--fs)*1.7 - 8px);
+  font:inherit; font-size:calc(var(--fs)*0.85);
+  border:1.5px solid var(--accent); border-radius:10px; padding:6px 9px;
+  resize:vertical; background:#fff; outline:none;
+}
+.empty{text-align:center; color:var(--muted); font-size:14px; padding:40px 20px; line-height:1.6}
+
+/* ----- Окно редактирования ----- */
+.overlay{
+  position:fixed; inset:0; z-index:50; background:rgba(38,36,58,.4);
+  backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.sheet{
+  background:#fff; width:100%; max-width:560px; border-radius:20px 20px 0 0;
+  padding:18px 16px calc(env(safe-area-inset-bottom) + 16px);
+  box-shadow:0 -8px 40px rgba(0,0,0,.2); animation:up .25s ease;
+}
+@keyframes up{from{transform:translateY(30px); opacity:0}}
+@media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:20px}}
+.sheet-title{font-weight:700; margin-bottom:10px; font-size:15px}
+#sheetText{
+  width:100%; min-height:130px; font:inherit; font-size:var(--fs); line-height:1.4;
+  border:1.5px solid var(--line); border-radius:12px; padding:10px 12px;
+  resize:vertical; outline:none;
+}
+#sheetText:focus{border-color:var(--accent)}
+.sheet-btns{display:flex; gap:10px; margin-top:12px; justify-content:flex-end}
+.sheet-btns button{
+  border-radius:12px; padding:10px 18px; font-size:15px; cursor:pointer;
+  border:1px solid var(--line); background:#f7f6fc; font-family:inherit;
+}
+#sheetOk{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+.sheet-btns button:active{transform:scale(.95)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== Верхняя панель ===== -->
+  <header class="panel" id="panel">
+    <div class="panel-inner"><div class="pw"><div class="panel-body">
+      <div class="row font-row">
+        <span class="lbl">Шрифт</span>
+        <input type="range" id="fontRange" min="1" max="10" step="1">
+        <span class="badge" id="fontBadge">5</span>
+      </div>
+      <div class="groups">
+        <div class="group">
+          <div class="glabel">Задачи</div>
+          <div class="grow">
+            <button class="tbtn" id="btnAdd"><span>✨</span>Добавить</button>
+            <button class="tbtn" id="btnComments"><span>🗒️</span>Комментарии</button>
+            <button class="tbtn" id="btnUndo" disabled><span>↩️</span>Отменить</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="glabel">Облако</div>
+          <div class="grow">
+            <button class="tbtn" id="btnSave"><span>☁️</span>Сохранить</button>
+            <button class="tbtn" id="btnLoad"><span>📥</span>Загрузить</button>
+          </div>
+        </div>
+      </div>
+      <div class="status" id="status"></div>
+    </div></div></div>
+    <button class="handle" id="panelToggle" title="Свернуть / развернуть панель">▾</button>
+  </header>
+
+  <!-- ===== Список задач ===== -->
+  <main class="list" id="list"></main>
+  <div class="empty hidden" id="empty">Пока пусто ✨<br>Нажми «Добавить» вверху, чтобы создать первую задачу.<br>Свайп задачи вправо — удаление.</div>
+</div>
+
+<!-- ===== Окно редактирования задачи ===== -->
+<div class="overlay hidden" id="overlay">
+  <div class="sheet">
+    <div class="sheet-title" id="sheetTitle">Задача</div>
+    <textarea id="sheetText" placeholder="Текст задачи…"></textarea>
+    <div class="sheet-btns">
+      <button id="sheetCancel">Отмена</button>
+      <button id="sheetOk">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================= CONFIG ================= */
+const NTFY_TOPIC = 'zadachi-sync-x7q2m9v4k1p8';          // твой секретный адрес в облаке
+const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
+const LS_KEY     = 'moiZadachi.v1';                      // ключ локального хранилища
+const DRAFT_KEY  = 'moiZadachi.draft';                   // черновик редактирования
+const FONT_SIZES = [11.5,12.5,13.5,14.5,15.5,16.5,17.5,19,20.5,22]; // шкала 1..10
+const COLORS     = ['none','blue','green'];              // порядок переключения по кружку
+const ZONE_W     = 104;                                  // ширина зоны «Удалить» (px)
+const OPEN_TH    = 55;                                   // порог свайпа для открытия (px)
+const UNDO_LIMIT = 10;                                   // сколько шагов отмены хранить
+const SEED_TASKS = []; // <-- сюда вставим твой список задач, когда пришлёшь
+
+/* ================= STATE / STORAGE ================= */
+function defaultState(){
+  return { v:1, fontSize:5, commentsCollapsed:false, panelCollapsed:false,
+    tasks: SEED_TASKS.map((t,i)=>({ id:'seed'+i, num:i+1, text:t, color:'none', comment:'' })) };
+}
+function normalizeState(s){ // защита от битых данных: приводим всё к валидному виду
+  const d = defaultState();
+  if(!s || !Array.isArray(s.tasks)) return d;
+  d.tasks = s.tasks.filter(t=>t && typeof t==='object').map((t,i)=>({
+    id: String(t.id ?? 't'+i),
+    num: Number.isFinite(t.num) ? t.num : i+1,
+    text: String(t.text ?? ''),
+    color: COLORS.includes(t.color) ? t.color : 'none',
+    comment: String(t.comment ?? '')
+  }));
+  d.fontSize = Math.min(10, Math.max(1, (s.fontSize|0) || 5));
+  d.commentsCollapsed = !!s.commentsCollapsed;
+  d.panelCollapsed = !!s.panelCollapsed;
+  return d;
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw) return normalizeState(JSON.parse(raw));
+  }catch(e){ console.warn('Не удалось прочитать хранилище', e); }
+  return defaultState();
+}
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch(e){ setStatus('⚠️ Не удалось сохранить локально'); }
+}
+let state = loadState();
+let editingCommentId = null; // id задачи с открытым полем комментария
+let editingTaskId = null;    // id задачи в окне редактирования
+let openSwipe = null;        // {wrap, card, delBtn, timer} — открытая свайпом карточка
+
+/* ================= ИСТОРИЯ ОТМЕНЫ (последние 10 действий) =================
+   Перед каждым изменением списка кладём «снимок» задач в стопку.
+   «Отменить» достаёт верхний снимок и восстанавливает его. */
+const history = [];
+function pushHistory(){
+  history.push(JSON.stringify(state.tasks));
+  if(history.length > UNDO_LIMIT) history.shift(); // стопка не растёт бесконечно
+  updateUndoBtn();
+}
+function undo(){
+  if(!history.length) return;
+  const snap = history.pop();
+  try{ state.tasks = normalizeState({tasks: JSON.parse(snap)}).tasks; }
+  catch(e){ setStatus('⚠️ Не удалось отменить'); return; }
+  editingCommentId = null;
+  closeSwipe();
+  save(); render();
+  setStatus('↩️ Действие отменено'); flash(btnUndo);
+}
+function updateUndoBtn(){ btnUndo.disabled = history.length === 0; }
+
+/* ================= ЭЛЕМЕНТЫ ================= */
+const $ = id => document.getElementById(id);
+const listEl=$('list'), emptyEl=$('empty'), panel=$('panel'),
+  fontRange=$('fontRange'), fontBadge=$('fontBadge'),
+  btnAdd=$('btnAdd'), btnComments=$('btnComments'), btnUndo=$('btnUndo'),
+  btnSave=$('btnSave'), btnLoad=$('btnLoad'),
+  panelToggle=$('panelToggle'), statusEl=$('status'),
+  overlay=$('overlay'), sheetTitle=$('sheetTitle'), sheetText=$('sheetText'),
+  sheetOk=$('sheetOk'), sheetCancel=$('sheetCancel');
+
+const findTask = id => state.tasks.find(t=>t.id===id);
+const timeNow = () => new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+
+/* ================= ОБРАТНАЯ СВЯЗЬ ================= */
+let statusTimer;
+function setStatus(msg){
+  statusEl.textContent = msg; statusEl.classList.add('show');
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(()=>statusEl.classList.remove('show'), 3000);
+}
+function flash(btn){
+  btn.classList.remove('done'); void btn.offsetWidth;
+  btn.classList.add('done'); setTimeout(()=>btn.classList.remove('done'), 600);
+}
+
+/* ================= СВАЙП-УДАЛЕНИЕ ================= */
+function resetDelBtn(sw){
+  clearTimeout(sw.timer);
+  sw.delBtn.classList.remove('confirm');
+  sw.delBtn.innerHTML = '<span>🗑️</span> Удалить';
+}
+function closeSwipe(){
+  if(!openSwipe) return;
+  const sw = openSwipe; openSwipe = null;
+  sw.wrap.classList.remove('open');
+  sw.card.style.transform = '';
+  resetDelBtn(sw);
+}
+function attachSwipe(wrap, card, delBtn, task){
+  let sx=0, sy=0, dx=0, active=false, horiz=false;
+  let suppressUntil = 0; // клики глушим по таймеру — обычные нажатия никогда не «съедаются»
+
+  function openCard(){
+    closeSwipe();
+    wrap.classList.add('open');
+    card.style.transform = 'translateX(' + ZONE_W + 'px)';
+    openSwipe = { wrap, card, delBtn, timer:null };
+  }
+  card.addEventListener('pointerdown', e=>{
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    if(e.target.closest('.comment-edit')) return; // не мешаем полю комментария
+    // тап по другой задаче закрывает открытую кнопку удаления; этот тап глушим
+    if(openSwipe && openSwipe.wrap!==wrap){ closeSwipe(); suppressUntil = Date.now()+400; }
+    sx=e.clientX; sy=e.clientY; dx=0; active=true; horiz=false;
+  });
+  card.addEventListener('pointermove', e=>{
+    if(!active) return;
+    const mx=e.clientX-sx, my=e.clientY-sy;
+    if(!horiz){
+      if(Math.abs(mx)>10 && Math.abs(mx)>Math.abs(my)){
+        horiz=true;
+        try{ card.setPointerCapture(e.pointerId); }catch(err){}
+        card.classList.add('dragging');
+      } else if(Math.abs(my)>10){ active=false; return; }
+      else return;
+    }
+    const base = wrap.classList.contains('open') ? ZONE_W : 0;
+    dx = Math.max(0, base + mx);
+    if(dx > ZONE_W) dx = ZONE_W + (dx-ZONE_W)*0.3; // резиновый эффект
+    card.style.transform = 'translateX(' + dx + 'px)';
+    e.preventDefault();
+  });
+  function endSwipe(){
+    if(!active) return;
+    active=false;
+    card.classList.remove('dragging');
+    if(horiz){
+      suppressUntil = Date.now()+400;
+      if(dx > OPEN_TH) openCard();
+      else if(openSwipe && openSwipe.wrap===wrap) closeSwipe();
+      else { wrap.classList.remove('open'); card.style.transform=''; }
+    }
+    horiz=false; dx=0;
+  }
+  card.addEventListener('pointerup', endSwipe);
+  card.addEventListener('pointercancel', endSwipe);
+  // глушим только клик, идущий сразу за жестом; тап по открытой карточке — закрывает её
+  card.addEventListener('click', e=>{
+    if(Date.now() < suppressUntil){ e.stopPropagation(); e.preventDefault(); return; }
+    if(wrap.classList.contains('open')){ closeSwipe(); e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
+  // двухшаговое удаление: «🗑️ Удалить» → «Удалить?» → удалено
+  delBtn.addEventListener('click', ()=>{
+    if(!delBtn.classList.contains('confirm')){
+      delBtn.classList.add('confirm');
+      delBtn.innerHTML = '<span>🗑️</span> Точно?';
+      if(openSwipe && openSwipe.delBtn===delBtn){
+        openSwipe.timer = setTimeout(()=>{ if(openSwipe) resetDelBtn(openSwipe); }, 2500);
+      }
+      return;
+    }
+    pushHistory(); // снимок ПЕРЕД удалением — чтобы можно было отменить
+    openSwipe = null;
+    state.tasks = state.tasks.filter(t=>t.id!==task.id);
+    if(editingCommentId===task.id) editingCommentId = null;
+    save(); render();
+    setStatus('Задача №' + task.num + ' удалена · ↩️ можно отменить');
+  });
+}
+
+/* ================= РЕНДЕР ================= */
+function applyFont(){
+  document.documentElement.style.setProperty('--fs', FONT_SIZES[state.fontSize-1] + 'px');
+}
+function renderTask(task){
+  const wrap = document.createElement('div'); wrap.className = 'swipe-wrap';
+
+  // красная зона удаления (под карточкой, открывается свайпом вправо)
+  const delBtn = document.createElement('button');
+  delBtn.className = 'del-zone'; delBtn.type = 'button';
+  delBtn.innerHTML = '<span>🗑️</span> Удалить';
+
+  const card = document.createElement('div');
+  card.className = 'task color-' + task.color;
+
+  const main = document.createElement('div'); main.className = 'task-main';
+
+  // кружок с фиксированным номером — переключает цвет по кругу
+  const numBtn = document.createElement('button');
+  numBtn.className = 'num'; numBtn.textContent = task.num;
+  numBtn.title = 'Статус: нажми, чтобы сменить';
+  numBtn.addEventListener('click', ()=>{
+    pushHistory(); // снимок перед сменой цвета
+    const i = COLORS.indexOf(task.color);
+    task.color = COLORS[(i+1) % COLORS.length];
+    save(); render();
+  });
+
+  // текст задачи — нажатие открывает окно редактирования
+  const body = document.createElement('div');
+  body.className = 'task-body'; body.title = 'Нажми, чтобы редактировать';
+  const span = document.createElement('span'); span.className = 'task-text';
+  if(task.text){ span.textContent = task.text; }
+  else { span.textContent = '— пусто, нажми, чтобы написать —'; span.classList.add('placeholder'); }
+  body.appendChild(span);
+  if(task.color !== 'none'){ // чип-индикатор на белой подложке
+    const chip = document.createElement('span'); chip.className = 'chip';
+    chip.textContent = task.color === 'green' ? '👑' : '⏳';
+    body.appendChild(chip);
+  }
+  body.addEventListener('click', ()=>openEditor(task.id));
+
+  // плюсик комментария — виден, только когда комментария нет
+  const plus = document.createElement('button');
+  plus.className = 'cplus'; plus.textContent = '＋'; plus.title = 'Добавить комментарий';
+  if(task.comment.trim() !== '') plus.classList.add('hidden');
+  plus.addEventListener('click', e=>{ e.stopPropagation(); startCommentEdit(task.id); });
+
+  main.append(numBtn, body, plus);
+  card.appendChild(main);
+
+  // комментарий: редактирование или просмотр
+  if(editingCommentId === task.id){
+    const ta = document.createElement('textarea');
+    ta.className = 'comment-edit'; ta.rows = 2;
+    ta.placeholder = 'Как выполнено / заметка…'; ta.value = task.comment;
+    ta.addEventListener('keydown', e=>{
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); ta.blur(); }
+    });
+    ta.addEventListener('blur', ()=>finishCommentEdit(task.id, ta.value));
+    card.appendChild(ta);
+    requestAnimationFrame(()=>ta.focus());
+  } else if(task.comment.trim() !== '' && !state.commentsCollapsed){
+    const c = document.createElement('div');
+    c.className = 'comment'; c.textContent = task.comment;
+    c.title = 'Нажми, чтобы изменить';
+    c.addEventListener('click', ()=>startCommentEdit(task.id));
+    card.appendChild(c);
+  }
+
+  wrap.append(delBtn, card);
+  attachSwipe(wrap, card, delBtn, task);
+  return wrap;
+}
+function render(){
+  openSwipe = null;
+  applyFont();
+  updateUndoBtn();
+  panel.classList.toggle('collapsed', state.panelCollapsed);
+  panelToggle.textContent = state.panelCollapsed ? '▴' : '▾';
+  btnComments.classList.toggle('off', state.commentsCollapsed);
+  listEl.innerHTML = '';
+  state.tasks.forEach(t => listEl.appendChild(renderTask(t)));
+  emptyEl.classList.toggle('hidden', state.tasks.length > 0);
+}
+
+/* ================= ЗАДАЧИ: ДОБАВИТЬ ================= */
+btnAdd.addEventListener('click', ()=>{
+  closeSwipe();
+  pushHistory(); // добавление тоже можно отменить
+  const maxNum = state.tasks.reduce((m,t)=>Math.max(m,t.num), 0);
+  const task = { id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+                 num:maxNum+1, text:'', color:'none', comment:'' };
+  state.tasks.push(task); save(); render(); flash(btnAdd);
+  openEditor(task.id); // сразу открываем окно, чтобы написать текст
+});
+btnUndo.addEventListener('click', undo);
+
+/* ================= КОММЕНТАРИИ ================= */
+function startCommentEdit(id){ editingCommentId = id; render(); }
+function finishCommentEdit(id, value){
+  if(editingCommentId !== id) return; // защита от двойного blur
+  editingCommentId = null;
+  const t = findTask(id);
+  if(t){
+    const v = value.trim();
+    if(v !== t.comment){ pushHistory(); t.comment = v; save(); } // снимок только при реальном изменении
+  }
+  render();
+}
+btnComments.addEventListener('click', ()=>{
+  state.commentsCollapsed = !state.commentsCollapsed;
+  save(); render(); flash(btnComments);
+  setStatus(state.commentsCollapsed ? 'Комментарии свёрнуты' : 'Комментарии развёрнуты');
+});
+
+/* ================= ОКНО РЕДАКТИРОВАНИЯ ================= */
+function openEditor(id){
+  const t = findTask(id); if(!t) return;
+  editingTaskId = id;
+  sheetTitle.textContent = 'Задача №' + t.num;
+  let val = t.text;
+  try{ // восстанавливаем черновик, если приложение закрыли посреди редактирования
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+    if(d && d.id === id) val = d.text;
+  }catch(e){}
+  sheetText.value = val;
+  overlay.classList.remove('hidden');
+  setTimeout(()=>sheetText.focus(), 60);
+}
+function closeEditor(){ overlay.classList.add('hidden'); editingTaskId = null; }
+sheetText.addEventListener('input', ()=>{
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({id:editingTaskId, text:sheetText.value})); }catch(e){}
+});
+sheetOk.addEventListener('click', ()=>{
+  const t = findTask(editingTaskId);
+  if(t){
+    const v = sheetText.value.trim();
+    if(v !== t.text){ pushHistory(); t.text = v; save(); } // снимок только при реальном изменении
+  }
+  localStorage.removeItem(DRAFT_KEY);
+  closeEditor(); render();
+});
+sheetCancel.addEventListener('click', closeEditor); // черновик остаётся
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeEditor(); });
+
+/* ================= ШРИФТ / ПАНЕЛЬ ================= */
+fontRange.value = state.fontSize; fontBadge.textContent = state.fontSize;
+fontRange.addEventListener('input', ()=>{
+  state.fontSize = +fontRange.value;
+  fontBadge.textContent = state.fontSize;
+  applyFont(); save();
+});
+panelToggle.addEventListener('click', ()=>{
+  state.panelCollapsed = !state.panelCollapsed;
+  save(); render();
+});
+
+/* ================= ОБЛАКО (ntfy) ================= */
+btnSave.addEventListener('click', async ()=>{
+  setStatus('Сохраняю в облако…');
+  try{
+    const res = await fetch(NTFY_URL, { method:'POST', body: JSON.stringify(state) });
+    if(!res.ok) throw 0;
+    setStatus('✅ Сохранено в облако · ' + timeNow()); flash(btnSave);
+  }catch(e){ setStatus('⚠️ Нет сети или облако недоступно'); }
+});
+btnLoad.addEventListener('click', async ()=>{
+  if(state.tasks.length && !confirm('На устройстве есть ' + state.tasks.length + ' задач. Заменить их данными из облака?')) return;
+  setStatus('Загружаю из облака…');
+  try{
+    const res = await fetch(NTFY_URL + '/json?poll=1&since=all');
+    const lines = (await res.text()).trim().split('\n').filter(Boolean);
+    for(let i=lines.length-1; i>=0; i--){ // ищем последнее валидное сообщение с задачами
+      let evt; try{ evt = JSON.parse(lines[i]); }catch(e){ continue; }
+      if(evt.event !== 'message') continue;
+      try{
+        const data = JSON.parse(evt.message);
+        if(data && Array.isArray(data.tasks)){
+          pushHistory(); // снимок перед заменой — случайную загрузку тоже можно отменить
+          state = normalizeState(data); save(); render();
+          setStatus('✅ Загружено из облака · ' + timeNow()); flash(btnLoad);
+          return;
+        }
+      }catch(e){}
+    }
+    setStatus('⚠️ В облаке пока нет сохранений');
+  }catch(e){ setStatus('⚠️ Нет сети или облако недоступно'); }
+});
+
+/* ================= СТАРТ ================= */
+render();
+</script>
+</body>
+</html>
